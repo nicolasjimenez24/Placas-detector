@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PlacaVision · Detector de placas (datos simulados)</title>
+  <meta name="description" content="Consola de detección y lectura de placas vehiculares sobre imágenes simuladas.">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='8' width='28' height='16' rx='3' fill='%23FACC15' stroke='%23111' stroke-width='2'/%3E%3Crect x='7' y='13' width='18' height='4' rx='1' fill='%23111'/%3E%3C/svg%3E">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('placavision-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { /* sin localStorage */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Sprite de íconos (estático) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-scan" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="7" y="9.5" width="10" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4m0 0L7.5 8.5M12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-batch" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="m14.5 17.5 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8m0-5v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-stats" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+      <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></symbol>
+      <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5v14l11-7z" fill="currentColor"/></symbol>
+      <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" fill="currentColor"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.1" fill="currentColor"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="7.5" r="1.2" fill="currentColor"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4h6v3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.8-4M4 4v4h4M4 13a8 8 0 0 0 14.8 4M20 20v-4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="9.5" r="1.8" fill="currentColor"/><path d="m4 18 5-5 4 4 3-3 4 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m3 13 9 5 9-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/></symbol>
+      <symbol id="i-type" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16m-3 0h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m12 15 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15" r="1.5" fill="currentColor"/></symbol>
+      <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16H3v-4l2-5h14l2 5v4h-2M5 16h14M5 16v2m14-2v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="13" r="1" fill="currentColor"/><circle cx="16.5" cy="13" r="1" fill="currentColor"/></symbol>
+      <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 15h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+    </defs>
+  </svg>
+
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <span class="brand__logo" aria-hidden="true">
+        <svg viewBox="0 0 40 40" width="34" height="34">
+          <rect x="3" y="10" width="34" height="20" rx="4" fill="#FACC15" stroke="#0b0d10" stroke-width="2.5"/>
+          <rect x="8" y="15" width="24" height="6" rx="1.5" fill="#0b0d10"/>
+          <rect x="13" y="24" width="14" height="2" rx="1" fill="#0b0d10" opacity=".55"/>
+          <path d="M1 7V3h4M35 3h4v4M39 33v4h-4M5 37H1v-4" fill="none" stroke="#22D3EE" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </span>
+      <div class="brand__text">
+        <span class="brand__name">Placa<strong>Vision</strong></span>
+        <span class="brand__tag">Consola de visión por computador</span>
+      </div>
+    </div>
+
+    <div class="sim-banner" role="note">
+      <svg class="icon" aria-hidden="true"><use href="#i-flask"/></svg>
+      <span><strong>Datos simulados:</strong> todas las imágenes y placas son sintéticas.</span>
+    </div>
+
+    <div class="topbar__actions">
+      <div class="health" id="health" role="status" aria-live="polite" data-state="checking">
+        <span class="health__dot" aria-hidden="true"></span>
+        <span class="health__label">Comprobando backend…</span>
+      </div>
+      <button class="icon-btn" id="btn-help" type="button" aria-label="Atajos de teclado y ayuda (tecla ?)" title="Atajos de teclado (?)">
+        <svg class="icon" aria-hidden="true"><use href="#i-keyboard"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-theme" type="button" aria-label="Cambiar a modo claro" title="Cambiar tema (T)">
+        <svg class="icon theme-icon--dark" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="icon theme-icon--light" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="sidenav" aria-label="Secciones">
+      <ul class="sidenav__list" role="tablist" aria-orientation="vertical">
+        <li><button class="nav-item" type="button" role="tab" id="tab-detector" aria-controls="view-detector" data-view="detector" aria-selected="true">
+          <svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg><span>Detector</span><kbd>1</kbd></button></li>
+        <li><button class="nav-item" type="button" role="tab" id="tab-upload" aria-controls="view-upload" data-view="upload" aria-selected="false" tabindex="-1">
+          <svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span>Subir imagen</span><kbd>2</kbd></button></li>
+        <li><button class="nav-item" type="button" role="tab" id="tab-batch" aria-controls="view-batch" data-view="batch" aria-selected="false" tabindex="-1">
+          <svg class="icon" aria-hidden="true"><use href="#i-batch"/></svg><span>Evaluación por lotes</span><kbd>3</kbd></button></li>
+        <li><button class="nav-item" type="button" role="tab" id="tab-history" aria-controls="view-history" data-view="history" aria-selected="false" tabindex="-1">
+          <svg class="icon" aria-hidden="true"><use href="#i-history"/></svg><span>Historial</span><kbd>4</kbd></button></li>
+        <li><button class="nav-item" type="button" role="tab" id="tab-stats" aria-controls="view-stats" data-view="stats" aria-selected="false" tabindex="-1">
+          <svg class="icon" aria-hidden="true"><use href="#i-stats"/></svg><span>Estadísticas</span><kbd>5</kbd></button></li>
+      </ul>
+      <div class="sidenav__foot">
+        <p class="muted small">Pipeline: HSV → color amarillo → contornos → enderezado → OCR por plantillas → validación <span class="mono">AAA-123</span>.</p>
+      </div>
+    </nav>
+
+    <main id="main" class="main" tabindex="-1">
+
+      <!-- ============ 1. DETECTOR ============ -->
+      <section class="view" id="view-detector" role="tabpanel" aria-labelledby="tab-detector">
+        <header class="view__head">
+          <div>
+            <h1 class="view__title">Panel de detección</h1>
+            <p class="view__subtitle">Genera escenas sintéticas de tráfico y ejecuta el pipeline de detección y OCR sobre cada una.</p>
+          </div>
+        </header>
+
+        <form class="card controls" id="sim-form" novalidate aria-label="Generar escenas simuladas">
+          <div class="field">
+            <label for="sim-count">Cantidad de escenas</label>
+            <div class="stepper">
+              <input type="range" id="sim-count-range" min="1" max="12" value="6" aria-label="Cantidad de escenas (deslizador)" tabindex="-1">
+              <input type="number" id="sim-count" name="count" min="1" max="12" value="6" inputmode="numeric" required>
+            </div>
+          </div>
+          <fieldset class="field">
+            <legend>Dificultad</legend>
+            <div class="segmented" role="radiogroup">
+              <label><input type="radio" name="difficulty" value="easy"><span>Fácil</span></label>
+              <label><input type="radio" name="difficulty" value="medium" checked><span>Media</span></label>
+              <label><input type="radio" name="difficulty" value="hard"><span>Difícil</span></label>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label for="sim-seed">Semilla <span class="muted">(opcional)</span></label>
+            <input type="number" id="sim-seed" name="seed" placeholder="Aleatoria" inputmode="numeric" step="1">
+          </div>
+          <div class="controls__actions">
+            <button class="btn btn--primary" type="submit" id="btn-generate">
+              <svg class="icon" aria-hidden="true"><use href="#i-sparkles"/></svg><span>Generar escenas</span><kbd>G</kbd>
+            </button>
+            <button class="btn btn--secondary" type="button" id="btn-detect-all" disabled>
+              <svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Detectar todas</span><kbd>A</kbd>
+            </button>
+          </div>
+        </form>
+
+        <div class="gallery-wrap">
+          <div class="gallery-head">
+            <h2 class="section-title">Escenas <span class="count-pill" id="scene-count">0</span></h2>
+            <div class="gallery-progress" id="detect-all-progress" hidden>
+              <div class="progress"><div class="progress__bar" id="detect-all-bar"></div></div>
+              <span class="small muted" id="detect-all-label"></span>
+            </div>
+            <div class="gallery-nav">
+              <button class="icon-btn icon-btn--sm" type="button" id="btn-prev-scene" aria-label="Escena anterior (flecha izquierda)" disabled><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
+              <button class="icon-btn icon-btn--sm" type="button" id="btn-next-scene" aria-label="Escena siguiente (flecha derecha)" disabled><svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+            </div>
+          </div>
+          <div class="gallery" id="gallery" role="listbox" aria-label="Escenas generadas" aria-orientation="horizontal"></div>
+        </div>
+
+        <div id="detector-viewer" class="viewer-host"></div>
+      </section>
+
+      <!-- ============ 2. SUBIR ============ -->
+      <section class="view" id="view-upload" role="tabpanel" aria-labelledby="tab-upload" hidden>
+        <header class="view__head">
+          <div>
+            <h1 class="view__title">Subir imagen</h1>
+            <p class="view__subtitle">Analiza tu propia imagen PNG o JPG. Las imágenes subidas no tienen <em>ground truth</em>, así que no se evalúa la precisión.</p>
+          </div>
+        </header>
+
+        <div class="upload-grid">
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="dropzone-hint" aria-label="Zona para soltar o seleccionar una imagen">
+            <input type="file" id="file-input" accept="image/png,image/jpeg,.png,.jpg,.jpeg" class="sr-only" tabindex="-1" aria-hidden="true">
+            <div class="dropzone__empty" id="dropzone-empty">
+              <div class="dropzone__icon" aria-hidden="true"><svg class="icon icon--xl"><use href="#i-upload"/></svg></div>
+              <p class="dropzone__title">Arrastra una imagen aquí</p>
+              <p class="muted" id="dropzone-hint">o <span class="link-like">selecciona un archivo</span> · PNG o JPG, máx. 10 MB</p>
+            </div>
+            <div class="dropzone__preview" id="dropzone-preview" hidden>
+              <img id="upload-preview" alt="Previsualización de la imagen seleccionada">
+              <div class="dropzone__meta">
+                <span class="mono small" id="upload-name"></span>
+                <span class="muted small" id="upload-size"></span>
+              </div>
+            </div>
+          </div>
+          <div class="upload-actions">
+            <button class="btn btn--primary" type="button" id="btn-upload-detect" disabled>
+              <svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg><span>Detectar placas</span><kbd>D</kbd>
+            </button>
+            <button class="btn btn--ghost" type="button" id="btn-upload-clear" disabled>
+              <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg><span>Quitar imagen</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="upload-viewer" class="viewer-host"></div>
+      </section>
+
+      <!-- ============ 3. LOTES ============ -->
+      <section class="view" id="view-batch" role="tabpanel" aria-labelledby="tab-batch" hidden>
+        <header class="view__head">
+          <div>
+            <h1 class="view__title">Evaluación por lotes</h1>
+            <p class="view__subtitle">Genera N escenas y mide el rendimiento del detector contra el <em>ground truth</em>.</p>
+          </div>
+        </header>
+
+        <form class="card controls" id="batch-form" novalidate aria-label="Configurar evaluación por lotes">
+          <div class="field">
+            <label for="batch-count">Número de escenas</label>
+            <div class="stepper">
+              <input type="range" id="batch-count-range" min="1" max="50" value="20" aria-label="Número de escenas (deslizador)" tabindex="-1">
+              <input type="number" id="batch-count" name="count" min="1" max="50" value="20" inputmode="numeric" required>
+            </div>
+          </div>
+          <fieldset class="field">
+            <legend>Dificultad</legend>
+            <div class="segmented" role="radiogroup">
+              <label><input type="radio" name="difficulty" value="easy"><span>Fácil</span></label>
+              <label><input type="radio" name="difficulty" value="medium" checked><span>Media</span></label>
+              <label><input type="radio" name="difficulty" value="hard"><span>Difícil</span></label>
+            </div>
+          </fieldset>
+          <div class="field">
+            <label for="batch-seed">Semilla <span class="muted">(opcional)</span></label>
+            <input type="number" id="batch-seed" name="seed" placeholder="Aleatoria" inputmode="numeric" step="1">
+          </div>
+          <div class="controls__actions">
+            <button class="btn btn--primary" type="submit" id="btn-batch">
+              <svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Ejecutar evaluación</span>
+            </button>
+          </div>
+        </form>
+
+        <div class="batch-running" id="batch-running" hidden role="status" aria-live="polite">
+          <div class="progress progress--indeterminate" aria-hidden="true"><div class="progress__bar"></div></div>
+          <p class="small muted" id="batch-running-label">Procesando lote…</p>
+        </div>
+
+        <div id="batch-results"></div>
+      </section>
+
+      <!-- ============ 4. HISTORIAL ============ -->
+      <section class="view" id="view-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+        <header class="view__head">
+          <div>
+            <h1 class="view__title">Historial</h1>
+            <p class="view__subtitle">Detecciones realizadas recientemente. Selecciona una fila para ver el detalle.</p>
+          </div>
+          <div class="view__head-actions">
+            <button class="btn btn--ghost" type="button" id="btn-history-refresh">
+              <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg><span>Actualizar</span>
+            </button>
+            <button class="btn btn--danger" type="button" id="btn-history-clear">
+              <svg class="icon" aria-hidden="true"><use href="#i-trash"/></svg><span>Borrar historial</span>
+            </button>
+          </div>
+        </header>
+
+        <div class="card filters" role="search" aria-label="Filtrar historial">
+          <div class="field field--grow">
+            <label for="history-q">Buscar placa</label>
+            <div class="input-icon">
+              <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+              <input type="search" id="history-q" placeholder="Ej.: ABC-123" autocomplete="off" spellcheck="false">
+            </div>
+          </div>
+          <div class="field">
+            <label for="history-source">Origen</label>
+            <select id="history-source">
+              <option value="all">Todos</option>
+              <option value="simulated">Simulada</option>
+              <option value="upload">Subida</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="history-result">Resultado</label>
+            <select id="history-result">
+              <option value="all">Todos</option>
+              <option value="correct">Correctas</option>
+              <option value="incorrect">Con errores</option>
+              <option value="unevaluated">Sin evaluación</option>
+              <option value="empty">Sin placas detectadas</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="history-list"></div>
+      </section>
+
+      <!-- ============ 5. ESTADÍSTICAS ============ -->
+      <section class="view" id="view-stats" role="tabpanel" aria-labelledby="tab-stats" hidden>
+        <header class="view__head">
+          <div>
+            <h1 class="view__title">Estadísticas globales</h1>
+            <p class="view__subtitle">Métricas acumuladas de todas las detecciones registradas.</p>
+          </div>
+          <div class="view__head-actions">
+            <button class="btn btn--ghost" type="button" id="btn-stats-refresh">
+              <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg><span>Actualizar</span>
+            </button>
+          </div>
+        </header>
+        <div id="stats-content"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Diálogo de detalle -->
+  <dialog class="modal modal--wide" id="detail-dialog" aria-labelledby="detail-title">
+    <div class="modal__head">
+      <h2 class="modal__title" id="detail-title">Detalle de la detección</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Cerrar detalle"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal__body" id="detail-body"></div>
+  </dialog>
+
+  <!-- Diálogo de confirmación -->
+  <dialog class="modal modal--sm" id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
+    <div class="modal__body confirm">
+      <div class="confirm__icon" aria-hidden="true"><svg class="icon icon--lg"><use href="#i-alert"/></svg></div>
+      <h2 class="modal__title" id="confirm-title">¿Confirmar?</h2>
+      <p id="confirm-msg" class="muted"></p>
+    </div>
+    <div class="modal__foot">
+      <button class="btn btn--ghost" type="button" id="confirm-cancel">Cancelar</button>
+      <button class="btn btn--danger" type="button" id="confirm-ok">Confirmar</button>
+    </div>
+  </dialog>
+
+  <!-- Diálogo de ayuda -->
+  <dialog class="modal" id="help-dialog" aria-labelledby="help-title">
+    <div class="modal__head">
+      <h2 class="modal__title" id="help-title">Atajos de teclado</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Cerrar ayuda"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="modal__body">
+      <table class="shortcuts">
+        <caption class="sr-only">Lista de atajos de teclado</caption>
+        <tbody>
+          <tr><td><kbd>G</kbd></td><td>Generar escenas (Detector)</td></tr>
+          <tr><td><kbd>D</kbd></td><td>Detectar la escena seleccionada o la imagen subida</td></tr>
+          <tr><td><kbd>A</kbd></td><td>Detectar todas las escenas</td></tr>
+          <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Escena anterior / siguiente</td></tr>
+          <tr><td><kbd>O</kbd></td><td>Alternar imagen original / anotada</td></tr>
+          <tr><td><kbd>B</kbd></td><td>Mostrar / ocultar cajas</td></tr>
+          <tr><td><kbd>1</kbd> … <kbd>5</kbd></td><td>Cambiar de sección</td></tr>
+          <tr><td><kbd>T</kbd></td><td>Cambiar tema claro / oscuro</td></tr>
+          <tr><td><kbd>?</kbd></td><td>Mostrar esta ayuda</td></tr>
+          <tr><td><kbd>Esc</kbd></td><td>Cerrar diálogos</td></tr>
+        </tbody>
+      </table>
+      <p class="small muted help-note">
+        <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+        <span>Los atajos se desactivan mientras escribes en un campo. Todas las escenas y placas son <strong>simuladas</strong>; no corresponden a vehículos reales.</span>
+      </p>
+    </div>
+  </dialog>
+
+  <div class="toasts" id="toasts" aria-live="polite" aria-relevant="additions" role="region" aria-label="Notificaciones"></div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>

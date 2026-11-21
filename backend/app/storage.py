@@ -62,7 +62,7 @@ class Storage:
     # ------------------------------ Imágenes ------------------------------ #
     def save_image(self, filename: str, bgr: np.ndarray) -> Path:
         path = self.images_dir / filename
-        ok, buf = cv2.imencode(".png", bgr, [cv2.IMWRITE_PNG_COMPRESSION, 3])
+        ok, buf = cv2.imencode(".png", bgr, [cv2.IMWRITE_PNG_COMPRESSION, 1])
         if not ok:  # pragma: no cover
             raise IOError(f"no se pudo codificar {filename}")
         path.write_bytes(buf.tobytes())
