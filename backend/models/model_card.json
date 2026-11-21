@@ -1,0 +1,751 @@
+{
+ "version": "1.0",
+ "created_at": "2026-11-21T13:35:18",
+ "dataset": {
+  "nombre": "sonnetechnology/license-plate-text-recognition-full (derivado de keremberke/license-plate-object-detection)",
+  "url": "https://huggingface.co/datasets/sonnetechnology/license-plate-text-recognition-full",
+  "licencia": "CC BY 4.0",
+  "imagenes": {
+   "train": 700,
+   "val": 150,
+   "test": 150
+  },
+  "nota_etiquetas": "El texto de las placas lo generó un modelo (TrOCR), no personas: tiene errores, por lo que la precisión de lectura medida en ese conjunto es una cota inferior.",
+  "sinteticas_colombianas": {
+   "train": 10000,
+   "val": 1000,
+   "test": 1000
+  }
+ },
+ "detector": {
+  "model": "YOLO11n ajustado (yolo11n.pt)",
+  "epochs": 15,
+  "imgsz": 416,
+  "train_minutes": 55.54081670840581,
+  "test": {
+   "precision": 0.9798489327843679,
+   "recall": 0.9597119863177191,
+   "map50": 0.972377309028626,
+   "map50_95": 0.6887249878616651,
+   "images": null
+  },
+  "speed_ms_per_image": {
+   "preprocess": 0.7196406667935662,
+   "inference": 34.85953466666009,
+   "loss": 0.00026666675694286823,
+   "postprocess": 1.0860446664931562
+  },
+  "history": [
+   {
+    "epoch": 1,
+    "train_box_loss": 1.48075,
+    "val_box_loss": 1.53525,
+    "precision": 0.85071,
+    "recall": 0.81942,
+    "map50": 0.87975,
+    "map50_95": 0.49068
+   },
+   {
+    "epoch": 2,
+    "train_box_loss": 1.47428,
+    "val_box_loss": 1.60279,
+    "precision": 0.92968,
+    "recall": 0.84314,
+    "map50": 0.93798,
+    "map50_95": 0.51338
+   },
+   {
+    "epoch": 3,
+    "train_box_loss": 1.47139,
+    "val_box_loss": 1.45168,
+    "precision": 0.94695,
+    "recall": 0.89542,
+    "map50": 0.93945,
+    "map50_95": 0.55225
+   },
+   {
+    "epoch": 4,
+    "train_box_loss": 1.36828,
+    "val_box_loss": 1.38214,
+    "precision": 0.94787,
+    "recall": 0.91503,
+    "map50": 0.96045,
+    "map50_95": 0.60492
+   },
+   {
+    "epoch": 5,
+    "train_box_loss": 1.36536,
+    "val_box_loss": 1.36382,
+    "precision": 0.96515,
+    "recall": 0.9085,
+    "map50": 0.97283,
+    "map50_95": 0.60714
+   },
+   {
+    "epoch": 6,
+    "train_box_loss": 1.30622,
+    "val_box_loss": 1.43384,
+    "precision": 0.964,
+    "recall": 0.9085,
+    "map50": 0.96174,
+    "map50_95": 0.58757
+   },
+   {
+    "epoch": 7,
+    "train_box_loss": 1.28843,
+    "val_box_loss": 1.4865,
+    "precision": 0.98225,
+    "recall": 0.91503,
+    "map50": 0.96649,
+    "map50_95": 0.58364
+   },
+   {
+    "epoch": 8,
+    "train_box_loss": 1.29913,
+    "val_box_loss": 1.36766,
+    "precision": 0.92762,
+    "recall": 0.93464,
+    "map50": 0.96101,
+    "map50_95": 0.57746
+   },
+   {
+    "epoch": 9,
+    "train_box_loss": 1.27987,
+    "val_box_loss": 1.39991,
+    "precision": 0.95332,
+    "recall": 0.93439,
+    "map50": 0.96943,
+    "map50_95": 0.61028
+   },
+   {
+    "epoch": 10,
+    "train_box_loss": 1.23875,
+    "val_box_loss": 1.39847,
+    "precision": 0.96504,
+    "recall": 0.96732,
+    "map50": 0.98614,
+    "map50_95": 0.61265
+   },
+   {
+    "epoch": 11,
+    "train_box_loss": 1.20714,
+    "val_box_loss": 1.36702,
+    "precision": 0.97064,
+    "recall": 0.94771,
+    "map50": 0.98326,
+    "map50_95": 0.61409
+   },
+   {
+    "epoch": 12,
+    "train_box_loss": 1.20721,
+    "val_box_loss": 1.33026,
+    "precision": 0.98269,
+    "recall": 0.96078,
+    "map50": 0.99021,
+    "map50_95": 0.64294
+   },
+   {
+    "epoch": 13,
+    "train_box_loss": 1.14747,
+    "val_box_loss": 1.29248,
+    "precision": 0.96201,
+    "recall": 0.94118,
+    "map50": 0.97397,
+    "map50_95": 0.64462
+   },
+   {
+    "epoch": 14,
+    "train_box_loss": 1.14012,
+    "val_box_loss": 1.31477,
+    "precision": 0.95428,
+    "recall": 0.95504,
+    "map50": 0.9798,
+    "map50_95": 0.63471
+   },
+   {
+    "epoch": 15,
+    "train_box_loss": 1.12364,
+    "val_box_loss": 1.3043,
+    "precision": 0.96803,
+    "recall": 0.97386,
+    "map50": 0.99113,
+    "map50_95": 0.65453
+   }
+  ]
+ },
+ "ocr": {
+  "model": "CRNN (CNN + BiLSTM + CTC)",
+  "params": 673157,
+  "best_epoch": 18,
+  "epochs": 20,
+  "train_samples": 10399,
+  "train_minutes": 101.70059466362,
+  "test": {
+   "real_test": {
+    "n": 84,
+    "plate_accuracy": 0.5952380952380952,
+    "cer": 0.15789473684210525,
+    "char_accuracy": 0.8421052631578947,
+    "avg_confidence": 0.6209281734688038,
+    "errores_ejemplo": [
+     {
+      "esperado": "CSURITI34",
+      "predicho": "VO3"
+     },
+     {
+      "esperado": "61A22959",
+      "predicho": "51A22959"
+     },
+     {
+      "esperado": "29A23950",
+      "predicho": "OA23950"
+     },
+     {
+      "esperado": "61A30001",
+      "predicho": "51A300001"
+     },
+     {
+      "esperado": "606000584",
+      "predicho": "GOL400504"
+     },
+     {
+      "esperado": "51051332",
+      "predicho": "51G51332"
+     },
+     {
+      "esperado": "SUB246724",
+      "predicho": "STT44014"
+     },
+     {
+      "esperado": "TIP5097",
+      "predicho": "TH068"
+     },
+     {
+      "esperado": "SIRSS813",
+      "predicho": "GIF5613"
+     },
+     {
+      "esperado": "BE33TA",
+      "predicho": "BBE3314"
+     },
+     {
+      "esperado": "51G43947",
+      "predicho": "51043947"
+     },
+     {
+      "esperado": "43A18650",
+      "predicho": "23A18650"
+     }
+    ]
+   },
+   "synth_test": {
+    "n": 1000,
+    "plate_accuracy": 0.998,
+    "cer": 0.0003333333333333333,
+    "char_accuracy": 0.9996666666666667,
+    "avg_confidence": 0.9930783769697425,
+    "errores_ejemplo": [
+     {
+      "esperado": "KRO168",
+      "predicho": "KRO169"
+     },
+     {
+      "esperado": "YIY904",
+      "predicho": "YYY904"
+     }
+    ]
+   }
+  },
+  "history": [
+   {
+    "epoch": 1,
+    "train_loss": 4.567069551027738,
+    "seconds": 202.0365834236145,
+    "real_val_plate_accuracy": 0.0,
+    "real_val_char_accuracy": 0.060913705583756306,
+    "synth_val_plate_accuracy": 0.0,
+    "synth_val_char_accuracy": 0.03066666666666662
+   },
+   {
+    "epoch": 2,
+    "train_loss": 2.935327536509587,
+    "seconds": 183.08599472045898,
+    "real_val_plate_accuracy": 0.0,
+    "real_val_char_accuracy": 0.2893401015228426,
+    "synth_val_plate_accuracy": 0.0,
+    "synth_val_char_accuracy": 0.2536666666666667
+   },
+   {
+    "epoch": 3,
+    "train_loss": 1.5211823080136226,
+    "seconds": 188.88417792320251,
+    "real_val_plate_accuracy": 0.14666666666666667,
+    "real_val_char_accuracy": 0.6091370558375635,
+    "synth_val_plate_accuracy": 0.329,
+    "synth_val_char_accuracy": 0.8541666666666666
+   },
+   {
+    "epoch": 4,
+    "train_loss": 0.25357783920489824,
+    "seconds": 189.05696940422058,
+    "real_val_plate_accuracy": 0.17333333333333334,
+    "real_val_char_accuracy": 0.6328257191201354,
+    "synth_val_plate_accuracy": 0.817,
+    "synth_val_char_accuracy": 0.9626666666666667
+   },
+   {
+    "epoch": 5,
+    "train_loss": 0.10667755391735297,
+    "seconds": 193.95834469795227,
+    "real_val_plate_accuracy": 0.26666666666666666,
+    "real_val_char_accuracy": 0.676818950930626,
+    "synth_val_plate_accuracy": 0.937,
+    "synth_val_char_accuracy": 0.9876666666666667
+   },
+   {
+    "epoch": 6,
+    "train_loss": 0.0783454548023068,
+    "seconds": 189.15237021446228,
+    "real_val_plate_accuracy": 0.44,
+    "real_val_char_accuracy": 0.7681895093062605,
+    "synth_val_plate_accuracy": 0.974,
+    "synth_val_char_accuracy": 0.9946666666666667
+   },
+   {
+    "epoch": 7,
+    "train_loss": 0.0610287454065222,
+    "seconds": 190.6321074962616,
+    "real_val_plate_accuracy": 0.49333333333333335,
+    "real_val_char_accuracy": 0.7817258883248731,
+    "synth_val_plate_accuracy": 0.982,
+    "synth_val_char_accuracy": 0.9965
+   },
+   {
+    "epoch": 8,
+    "train_loss": 0.05252079492291579,
+    "seconds": 156.44166803359985,
+    "real_val_plate_accuracy": 0.5066666666666667,
+    "real_val_char_accuracy": 0.8104906937394247,
+    "synth_val_plate_accuracy": 0.978,
+    "synth_val_char_accuracy": 0.9956666666666667
+   },
+   {
+    "epoch": 9,
+    "train_loss": 0.05252105329329004,
+    "seconds": 181.62813687324524,
+    "real_val_plate_accuracy": 0.52,
+    "real_val_char_accuracy": 0.8155668358714044,
+    "synth_val_plate_accuracy": 0.977,
+    "synth_val_char_accuracy": 0.996
+   },
+   {
+    "epoch": 10,
+    "train_loss": 0.04700178667114904,
+    "seconds": 187.15572214126587,
+    "real_val_plate_accuracy": 0.5866666666666667,
+    "real_val_char_accuracy": 0.8138747884940778,
+    "synth_val_plate_accuracy": 0.99,
+    "synth_val_char_accuracy": 0.998
+   },
+   {
+    "epoch": 11,
+    "train_loss": 0.03787260361087437,
+    "seconds": 2768.26850605011,
+    "real_val_plate_accuracy": 0.5866666666666667,
+    "real_val_char_accuracy": 0.8274111675126904,
+    "synth_val_plate_accuracy": 0.983,
+    "synth_val_char_accuracy": 0.997
+   },
+   {
+    "epoch": 12,
+    "train_loss": 0.033070930448504024,
+    "seconds": 172.50419783592224,
+    "real_val_plate_accuracy": 0.5333333333333333,
+    "real_val_char_accuracy": 0.8087986463620982,
+    "synth_val_plate_accuracy": 0.987,
+    "synth_val_char_accuracy": 0.9976666666666667
+   },
+   {
+    "epoch": 13,
+    "train_loss": 0.029682196496914212,
+    "seconds": 130.9913046360016,
+    "real_val_plate_accuracy": 0.56,
+    "real_val_char_accuracy": 0.8121827411167513,
+    "synth_val_plate_accuracy": 0.991,
+    "synth_val_char_accuracy": 0.9983333333333333
+   },
+   {
+    "epoch": 14,
+    "train_loss": 0.0255029009300499,
+    "seconds": 173.6823923587799,
+    "real_val_plate_accuracy": 0.5866666666666667,
+    "real_val_char_accuracy": 0.8358714043993232,
+    "synth_val_plate_accuracy": 0.994,
+    "synth_val_char_accuracy": 0.999
+   },
+   {
+    "epoch": 15,
+    "train_loss": 0.023485482042440428,
+    "seconds": 171.1994755268097,
+    "real_val_plate_accuracy": 0.5733333333333334,
+    "real_val_char_accuracy": 0.8121827411167513,
+    "synth_val_plate_accuracy": 0.991,
+    "synth_val_char_accuracy": 0.9983333333333333
+   },
+   {
+    "epoch": 16,
+    "train_loss": 0.019406096865064823,
+    "seconds": 141.2107675075531,
+    "real_val_plate_accuracy": 0.5866666666666667,
+    "real_val_char_accuracy": 0.8307952622673435,
+    "synth_val_plate_accuracy": 0.997,
+    "synth_val_char_accuracy": 0.9993333333333333
+   },
+   {
+    "epoch": 17,
+    "train_loss": 0.017787710197556476,
+    "seconds": 157.8279185295105,
+    "real_val_plate_accuracy": 0.6,
+    "real_val_char_accuracy": 0.8307952622673435,
+    "synth_val_plate_accuracy": 0.994,
+    "synth_val_char_accuracy": 0.9988333333333334
+   },
+   {
+    "epoch": 18,
+    "train_loss": 0.015963347140126503,
+    "seconds": 166.832026720047,
+    "real_val_plate_accuracy": 0.6,
+    "real_val_char_accuracy": 0.8291032148900169,
+    "synth_val_plate_accuracy": 0.996,
+    "synth_val_char_accuracy": 0.9991666666666666
+   },
+   {
+    "epoch": 19,
+    "train_loss": 0.016070552924647926,
+    "seconds": 170.66096329689026,
+    "real_val_plate_accuracy": 0.6,
+    "real_val_char_accuracy": 0.8291032148900169,
+    "synth_val_plate_accuracy": 0.995,
+    "synth_val_char_accuracy": 0.999
+   },
+   {
+    "epoch": 20,
+    "train_loss": 0.016724887575166155,
+    "seconds": 180.22503924369812,
+    "real_val_plate_accuracy": 0.6,
+    "real_val_char_accuracy": 0.8324873096446701,
+    "synth_val_plate_accuracy": 0.995,
+    "synth_val_char_accuracy": 0.999
+   }
+  ]
+ },
+ "colombia_real": {
+  "summary": {
+   "ml": {
+    "images": 18,
+    "detection_rate": 0.8888888888888888,
+    "plate_accuracy": 0.5,
+    "char_accuracy": 0.7500000000000001,
+    "avg_ms": 407.02717222383296
+   },
+   "clasico": {
+    "images": 18,
+    "detection_rate": 0.5555555555555556,
+    "plate_accuracy": 0.16666666666666666,
+    "char_accuracy": 0.3611111111111111,
+    "avg_ms": 265.7066111100398
+   }
+  },
+  "per_image": [
+   {
+    "imagen": "1.jpg",
+    "esperado": "KOO042",
+    "ml": {
+     "leido": "KOD042",
+     "exacta": false,
+     "placas": 1,
+     "ms": 679.8
+    },
+    "clasico": {
+     "leido": "KDD042",
+     "exacta": false,
+     "placas": 1,
+     "ms": 806.1
+    }
+   },
+   {
+    "imagen": "2.jpg",
+    "esperado": "RKW326",
+    "ml": {
+     "leido": "RKN326",
+     "exacta": false,
+     "placas": 1,
+     "ms": 328.1
+    },
+    "clasico": {
+     "leido": "LAK732",
+     "exacta": false,
+     "placas": 1,
+     "ms": 107.2
+    }
+   },
+   {
+    "imagen": "3.jpg",
+    "esperado": "DFT369",
+    "ml": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 310.6
+    },
+    "clasico": {
+     "leido": "DFT589",
+     "exacta": false,
+     "placas": 1,
+     "ms": 241.9
+    }
+   },
+   {
+    "imagen": "4.jpg",
+    "esperado": "RJV247",
+    "ml": {
+     "leido": "RJV247",
+     "exacta": true,
+     "placas": 2,
+     "ms": 331.1
+    },
+    "clasico": {
+     "leido": "RJV247",
+     "exacta": true,
+     "placas": 1,
+     "ms": 109.2
+    }
+   },
+   {
+    "imagen": "5.jpg",
+    "esperado": "DFV275",
+    "ml": {
+     "leido": "DFV275",
+     "exacta": true,
+     "placas": 1,
+     "ms": 328.6
+    },
+    "clasico": {
+     "leido": "DFV275",
+     "exacta": true,
+     "placas": 1,
+     "ms": 253.7
+    }
+   },
+   {
+    "imagen": "6.jpg",
+    "esperado": "DHV377",
+    "ml": {
+     "leido": "DHV577",
+     "exacta": false,
+     "placas": 1,
+     "ms": 344.3
+    },
+    "clasico": {
+     "leido": "JHV377",
+     "exacta": false,
+     "placas": 1,
+     "ms": 242.7
+    }
+   },
+   {
+    "imagen": "7.jpg",
+    "esperado": "GGU267",
+    "ml": {
+     "leido": "GGU267",
+     "exacta": true,
+     "placas": 2,
+     "ms": 406.0
+    },
+    "clasico": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 392.7
+    }
+   },
+   {
+    "imagen": "8.jpg",
+    "esperado": "MLB485",
+    "ml": {
+     "leido": "OOO019",
+     "exacta": false,
+     "placas": 1,
+     "ms": 406.7
+    },
+    "clasico": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 422.8
+    }
+   },
+   {
+    "imagen": "9.jpg",
+    "esperado": "BTN068",
+    "ml": {
+     "leido": "BTN068",
+     "exacta": true,
+     "placas": 1,
+     "ms": 455.4
+    },
+    "clasico": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 422.5
+    }
+   },
+   {
+    "imagen": "10.jpg",
+    "esperado": "GXL041",
+    "ml": {
+     "leido": "GXL041",
+     "exacta": true,
+     "placas": 1,
+     "ms": 375.3
+    },
+    "clasico": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 365.8
+    }
+   },
+   {
+    "imagen": "11.jpg",
+    "esperado": "AKD225",
+    "ml": {
+     "leido": "AKD225",
+     "exacta": true,
+     "placas": 1,
+     "ms": 445.4
+    },
+    "clasico": {
+     "leido": "AKD22",
+     "exacta": false,
+     "placas": 1,
+     "ms": 405.0
+    }
+   },
+   {
+    "imagen": "12.jpg",
+    "esperado": "RBE367",
+    "ml": {
+     "leido": "RBF367",
+     "exacta": false,
+     "placas": 1,
+     "ms": 363.7
+    },
+    "clasico": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 358.4
+    }
+   },
+   {
+    "imagen": "13.jpg",
+    "esperado": "NAG598",
+    "ml": {
+     "leido": "NAG598",
+     "exacta": true,
+     "placas": 1,
+     "ms": 293.8
+    },
+    "clasico": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 61.6
+    }
+   },
+   {
+    "imagen": "14.jpg",
+    "esperado": "LGG261",
+    "ml": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 421.6
+    },
+    "clasico": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 82.3
+    }
+   },
+   {
+    "imagen": "15.jpg",
+    "esperado": "FBU803",
+    "ml": {
+     "leido": "FBU805",
+     "exacta": false,
+     "placas": 2,
+     "ms": 517.4
+    },
+    "clasico": {
+     "leido": "",
+     "exacta": false,
+     "placas": 0,
+     "ms": 108.3
+    }
+   },
+   {
+    "imagen": "16.jpg",
+    "esperado": "JNU540",
+    "ml": {
+     "leido": "JNU540",
+     "exacta": true,
+     "placas": 1,
+     "ms": 454.2
+    },
+    "clasico": {
+     "leido": "JNU540",
+     "exacta": true,
+     "placas": 1,
+     "ms": 103.4
+    }
+   },
+   {
+    "imagen": "17.jpg",
+    "esperado": "JLY246",
+    "ml": {
+     "leido": "JLY246",
+     "exacta": true,
+     "placas": 1,
+     "ms": 478.3
+    },
+    "clasico": {
+     "leido": "75XZ",
+     "exacta": false,
+     "placas": 1,
+     "ms": 160.0
+    }
+   },
+   {
+    "imagen": "18.jpg",
+    "esperado": "DQY789",
+    "ml": {
+     "leido": "TD189",
+     "exacta": false,
+     "placas": 1,
+     "ms": 386.2
+    },
+    "clasico": {
+     "leido": "AU19",
+     "exacta": false,
+     "placas": 1,
+     "ms": 139.2
+    }
+   }
+  ],
+  "nota": "18 fotos reales de placas colombianas (sin licencia declarada; no se redistribuyen)."
+ }
+}

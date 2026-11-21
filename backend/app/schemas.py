@@ -6,6 +6,8 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 Difficulty = Literal["easy", "medium", "hard"]
+# "clasico": visión por computador de la v1 (placas simuladas). "ml": modelos entrenados (fotos reales).
+Engine = Literal["clasico", "ml"]
 
 
 # ----------------------------- Peticiones --------------------------------- #
@@ -17,6 +19,7 @@ class SimulateRequest(BaseModel):
 
 class DetectRequest(BaseModel):
     scene_id: str = Field(..., min_length=1)
+    engine: Engine = "clasico"
 
 
 class BatchRequest(BaseModel):
@@ -58,6 +61,8 @@ class Plate(BaseModel):
     chars: list[CharConfidence]
     crop_url: str
     valid_format: bool
+    raw_text: Optional[str] = None              # solo motor "ml": lectura antes del formato colombiano
+    detection_confidence: Optional[float] = None  # solo motor "ml": confianza del detector YOLO
 
 
 class Stage(BaseModel):
@@ -77,6 +82,7 @@ class Detection(BaseModel):
     id: str
     scene_id: Optional[str] = None
     source: Literal["simulated", "upload"]
+    engine: Engine = "clasico"
     image_url: str
     annotated_url: str
     width: int

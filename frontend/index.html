@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PlacaVision · Detector de placas (datos simulados)</title>
-  <meta name="description" content="Consola de detección y lectura de placas vehiculares sobre imágenes simuladas.">
+  <title>PlacaVision · Detector de placas</title>
+  <meta name="description" content="Consola de detección y lectura de placas vehiculares: escenas simuladas y fotos reales de placas colombianas con un modelo entrenado.">
   <meta name="color-scheme" content="dark light">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='8' width='28' height='16' rx='3' fill='%23FACC15' stroke='%23111' stroke-width='2'/%3E%3Crect x='7' y='13' width='18' height='4' rx='1' fill='%23111'/%3E%3C/svg%3E">
   <script>
@@ -49,6 +49,11 @@
       <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 17a8 8 0 1 1 16 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="m12 15 4-5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="15" r="1.5" fill="currentColor"/></symbol>
       <symbol id="i-car" viewBox="0 0 24 24"><path d="M5 16H3v-4l2-5h14l2 5v4h-2M5 16h14M5 16v2m14-2v2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7.5" cy="13" r="1" fill="currentColor"/><circle cx="16.5" cy="13" r="1" fill="currentColor"/></symbol>
       <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M7.5 15h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-model" viewBox="0 0 24 24"><path d="M6.6 7.2 10.4 11M6.6 16.8l3.8-3.8M13.6 11l3.8-3.8M13.6 13l3.8 3.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="5" cy="5.5" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="5" cy="18.5" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.4" fill="currentColor"/><circle cx="19" cy="5.5" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="19" cy="18.5" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+      <symbol id="i-crop" viewBox="0 0 24 24"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="2.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 5.5v13c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8v-13M4 12c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
     </defs>
   </svg>
 
@@ -72,7 +77,7 @@
 
     <div class="sim-banner" role="note">
       <svg class="icon" aria-hidden="true"><use href="#i-flask"/></svg>
-      <span><strong>Datos simulados:</strong> todas las imágenes y placas son sintéticas.</span>
+      <span><strong>Escenas simuladas</strong> · la subida admite fotos reales de placas colombianas.</span>
     </div>
 
     <div class="topbar__actions">
@@ -103,9 +108,12 @@
           <svg class="icon" aria-hidden="true"><use href="#i-history"/></svg><span>Historial</span><kbd>4</kbd></button></li>
         <li><button class="nav-item" type="button" role="tab" id="tab-stats" aria-controls="view-stats" data-view="stats" aria-selected="false" tabindex="-1">
           <svg class="icon" aria-hidden="true"><use href="#i-stats"/></svg><span>Estadísticas</span><kbd>5</kbd></button></li>
+        <li><button class="nav-item" type="button" role="tab" id="tab-model" aria-controls="view-model" data-view="model" aria-selected="false" tabindex="-1">
+          <svg class="icon" aria-hidden="true"><use href="#i-model"/></svg><span>Modelo</span><kbd>6</kbd></button></li>
       </ul>
       <div class="sidenav__foot">
-        <p class="muted small">Pipeline: HSV → color amarillo → contornos → enderezado → OCR por plantillas → validación <span class="mono">AAA-123</span>.</p>
+        <p class="muted small"><strong>Modelo entrenado:</strong> YOLO → recorte → CRNN + CTC → formato <span class="mono">ABC123</span>.</p>
+        <p class="muted small sidenav__foot-2"><strong>Clásico:</strong> HSV → color amarillo → contornos → OCR por plantillas → <span class="mono">AAA-123</span>.</p>
       </div>
     </nav>
 
@@ -173,17 +181,32 @@
         <header class="view__head">
           <div>
             <h1 class="view__title">Subir imagen</h1>
-            <p class="view__subtitle">Analiza tu propia imagen PNG o JPG. Las imágenes subidas no tienen <em>ground truth</em>, así que no se evalúa la precisión.</p>
+            <p class="view__subtitle">Sube una <strong>foto real</strong> de un vehículo con placa colombiana (formato <span class="mono">ABC123</span>) o una escena simulada, en PNG o JPG. Las imágenes subidas no tienen <em>ground truth</em>, así que no se evalúa la precisión.</p>
           </div>
         </header>
 
         <div class="upload-grid">
+          <div class="card engine-picker" role="group" aria-labelledby="engine-title">
+            <div class="engine-picker__row">
+              <h2 class="card__title" id="engine-title"><svg class="icon" aria-hidden="true"><use href="#i-model"/></svg>Motor de detección</h2>
+              <div class="segmented segmented--wrap" role="radiogroup" aria-labelledby="engine-title" aria-describedby="engine-hint">
+                <label id="engine-ml-label"><input type="radio" name="engine" id="engine-ml" value="ml" checked><span>Modelo entrenado (fotos reales)</span></label>
+                <label><input type="radio" name="engine" id="engine-clasico" value="clasico"><span>Clásico (simulación)</span></label>
+              </div>
+            </div>
+            <p class="small muted engine-picker__hint" id="engine-hint" aria-live="polite">Detector YOLO y lector CRNN entrenados con fotos reales: lee placas colombianas reales.</p>
+            <div class="callout callout--warn small" id="engine-note" role="note" hidden>
+              <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+              <span>El modelo entrenado no está disponible en el servidor, así que se usará el motor clásico.
+                <button class="link-btn" type="button" id="engine-note-link">Ver cómo entrenarlo</button></span>
+            </div>
+          </div>
           <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="dropzone-hint" aria-label="Zona para soltar o seleccionar una imagen">
             <input type="file" id="file-input" accept="image/png,image/jpeg,.png,.jpg,.jpeg" class="sr-only" tabindex="-1" aria-hidden="true">
             <div class="dropzone__empty" id="dropzone-empty">
               <div class="dropzone__icon" aria-hidden="true"><svg class="icon icon--xl"><use href="#i-upload"/></svg></div>
               <p class="dropzone__title">Arrastra una imagen aquí</p>
-              <p class="muted" id="dropzone-hint">o <span class="link-like">selecciona un archivo</span> · PNG o JPG, máx. 10 MB</p>
+              <p class="muted" id="dropzone-hint">o <span class="link-like">selecciona un archivo</span> · foto real o escena simulada · PNG o JPG, máx. 10 MB</p>
             </div>
             <div class="dropzone__preview" id="dropzone-preview" hidden>
               <img id="upload-preview" alt="Previsualización de la imagen seleccionada">
@@ -272,7 +295,7 @@
             <label for="history-q">Buscar placa</label>
             <div class="input-icon">
               <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
-              <input type="search" id="history-q" placeholder="Ej.: ABC-123" autocomplete="off" spellcheck="false">
+              <input type="search" id="history-q" placeholder="Ej.: ABC123 o ABC-123" autocomplete="off" spellcheck="false">
             </div>
           </div>
           <div class="field">
@@ -281,6 +304,14 @@
               <option value="all">Todos</option>
               <option value="simulated">Simulada</option>
               <option value="upload">Subida</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="history-engine">Motor</label>
+            <select id="history-engine">
+              <option value="all">Todos</option>
+              <option value="ml">Modelo entrenado</option>
+              <option value="clasico">Clásico</option>
             </select>
           </div>
           <div class="field">
@@ -312,6 +343,22 @@
           </div>
         </header>
         <div id="stats-content"></div>
+      </section>
+
+      <!-- ============ 6. MODELO ============ -->
+      <section class="view" id="view-model" role="tabpanel" aria-labelledby="tab-model" hidden>
+        <header class="view__head">
+          <div>
+            <h1 class="view__title">Modelo entrenado</h1>
+            <p class="view__subtitle">Ficha del detector YOLO y del lector CRNN entrenados con fotos reales: datos usados, métricas en prueba, curvas de entrenamiento y comparación con el motor clásico.</p>
+          </div>
+          <div class="view__head-actions">
+            <button class="btn btn--ghost" type="button" id="btn-model-refresh">
+              <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg><span>Actualizar</span>
+            </button>
+          </div>
+        </header>
+        <div id="model-content"></div>
       </section>
     </main>
   </div>
@@ -354,7 +401,7 @@
           <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Escena anterior / siguiente</td></tr>
           <tr><td><kbd>O</kbd></td><td>Alternar imagen original / anotada</td></tr>
           <tr><td><kbd>B</kbd></td><td>Mostrar / ocultar cajas</td></tr>
-          <tr><td><kbd>1</kbd> … <kbd>5</kbd></td><td>Cambiar de sección</td></tr>
+          <tr><td><kbd>1</kbd> … <kbd>6</kbd></td><td>Cambiar de sección (<kbd>6</kbd>: Modelo)</td></tr>
           <tr><td><kbd>T</kbd></td><td>Cambiar tema claro / oscuro</td></tr>
           <tr><td><kbd>?</kbd></td><td>Mostrar esta ayuda</td></tr>
           <tr><td><kbd>Esc</kbd></td><td>Cerrar diálogos</td></tr>
@@ -362,7 +409,7 @@
       </table>
       <p class="small muted help-note">
         <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
-        <span>Los atajos se desactivan mientras escribes en un campo. Todas las escenas y placas son <strong>simuladas</strong>; no corresponden a vehículos reales.</span>
+        <span>Los atajos se desactivan mientras escribes en un campo. En los gráficos de la sección Modelo, enfoca el gráfico y usa <kbd>←</kbd> <kbd>→</kbd> para recorrer las épocas. Las escenas del Detector y de los lotes son <strong>simuladas</strong>; en «Subir imagen» puedes usar fotos reales.</span>
       </p>
     </div>
   </dialog>

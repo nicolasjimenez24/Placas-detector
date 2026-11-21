@@ -2,3 +2,7 @@ data/
 __pycache__/
 *.pyc
 .pytest_cache/
+ml/datasets/
+ml/runs/
+*.pt
+!backend/models/*.pt

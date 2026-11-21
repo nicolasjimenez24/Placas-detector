@@ -15,13 +15,16 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
+import json
+import threading
+
+from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import detector
+from . import detector, ml_inference
 from .generator import DIFFICULTIES, generate_scene
 from .schemas import (BatchRequest, BatchResponse, DeleteResponse, Detection, DetectRequest,
                       Health, HistoryResponse, Metrics, ScenesResponse, SimulateRequest,
@@ -41,6 +44,8 @@ _POOL = ThreadPoolExecutor(max_workers=max(2, min(4, (os.cpu_count() or 2))), th
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     detector.warmup()  # plantillas OCR en memoria
+    # los modelos entrenados (PyTorch) tardan unos segundos en cargar: se precargan en segundo plano
+    threading.Thread(target=ml_inference.warmup, daemon=True).start()
     get_storage()
     yield
 
@@ -164,10 +169,16 @@ def _create_scene_with_image(seed: int | None, difficulty: str) -> tuple[dict, n
     return scene, bgr
 
 
-def _run_detection(img: np.ndarray, *, source: str, image_filename: str, scene: dict | None) -> dict:
+def _check_engine(engine: str) -> None:
+    if engine == "ml" and not ml_inference.available():
+        raise HTTPException(status_code=503, detail="El modelo entrenado no está disponible: entrénalo con los scripts de ml/")
+
+
+def _run_detection(img: np.ndarray, *, source: str, image_filename: str, scene: dict | None,
+                   engine: str = "clasico") -> dict:
     st = get_storage()
     det_id = _new_id()
-    res = detector.detect(img)
+    res = ml_inference.detect(img) if engine == "ml" else detector.detect(img)
     plates = []
     for k, p in enumerate(res.plates):
         crop_name = f"det_{det_id}_plate{k}.png"
@@ -179,6 +190,8 @@ def _run_detection(img: np.ndarray, *, source: str, image_filename: str, scene: 
             "chars": [{"char": c.char, "confidence": float(c.confidence)} for c in p.chars],
             "crop_url": f"/api/images/{crop_name}",
             "valid_format": bool(p.valid_format),
+            "raw_text": getattr(p, "raw_text", None),
+            "detection_confidence": getattr(p, "detection_confidence", None),
         })
     annotated_name = f"det_{det_id}_annotated.png"
     st.save_image(annotated_name, res.annotated)
@@ -187,6 +200,7 @@ def _run_detection(img: np.ndarray, *, source: str, image_filename: str, scene: 
         "id": det_id,
         "scene_id": scene["id"] if scene else None,
         "source": source,
+        "engine": engine,
         "image_url": f"/api/images/{image_filename}",
         "annotated_url": f"/api/images/{annotated_name}",
         "width": res.width,
@@ -204,7 +218,7 @@ def _run_detection(img: np.ndarray, *, source: str, image_filename: str, scene: 
     return det
 
 
-def _detect_scene(scene_id: str) -> dict:
+def _detect_scene(scene_id: str, engine: str = "clasico") -> dict:
     st = get_storage()
     scene = st.get_scene(scene_id)
     if scene is None:
@@ -213,7 +227,7 @@ def _detect_scene(scene_id: str) -> dict:
     img = st.load_image(filename)
     if img is None:
         raise HTTPException(status_code=404, detail=f"Imagen de la escena '{scene_id}' no encontrada")
-    return _run_detection(img, source="simulated", image_filename=filename, scene=scene)
+    return _run_detection(img, source="simulated", image_filename=filename, scene=scene, engine=engine)
 
 
 def _public_scene(scene: dict) -> dict:
@@ -237,11 +251,17 @@ def simulate(req: SimulateRequest):
 
 @app.post("/api/detect", response_model=Detection)
 def detect_scene(req: DetectRequest):
-    return _detect_scene(req.scene_id)
+    _check_engine(req.engine)
+    return _detect_scene(req.scene_id, req.engine)
 
 
 @app.post("/api/detect/upload", response_model=Detection)
-async def detect_upload(file: UploadFile = File(...)):
+async def detect_upload(file: UploadFile = File(...), engine: str | None = Form(None)):
+    # por defecto, las fotos subidas usan el modelo entrenado si existe
+    engine = engine or ("ml" if ml_inference.available() else "clasico")
+    if engine not in ("clasico", "ml"):
+        raise HTTPException(status_code=422, detail="engine debe ser 'clasico' o 'ml'")
+    _check_engine(engine)
     data = await file.read(MAX_UPLOAD_BYTES + 1)
     if len(data) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="El archivo supera el máximo de 15 MB")
@@ -257,7 +277,7 @@ async def detect_upload(file: UploadFile = File(...)):
     st = get_storage()
     filename = f"upload_{_new_id()}.png"
     st.save_image(filename, img)
-    return _run_detection(img, source="upload", image_filename=filename, scene=None)
+    return _run_detection(img, source="upload", image_filename=filename, scene=None, engine=engine)
 
 
 @app.post("/api/detect/batch", response_model=BatchResponse)
@@ -270,6 +290,14 @@ def detect_batch(req: BatchRequest):
     seeds = [None if req.seed is None else req.seed + i for i in range(req.count)]
     results = list(_POOL.map(one, seeds))
     return {"results": results, "metrics": compute_metrics(results)}
+
+
+@app.get("/api/model")
+def model_info():
+    """Ficha del modelo entrenado: datos, métricas de prueba y curvas de entrenamiento."""
+    card_path = ml_inference.MODELS_DIR / "model_card.json"
+    card = json.loads(card_path.read_text(encoding="utf-8")) if card_path.is_file() else None
+    return {"available": ml_inference.available(), "card": card}
 
 
 @app.get("/api/scenes", response_model=ScenesResponse)

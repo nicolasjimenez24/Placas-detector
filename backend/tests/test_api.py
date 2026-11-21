@@ -47,6 +47,7 @@ def test_detect_scene(client):
     assert r.status_code == 200
     d = r.json()
     assert d["scene_id"] == scene["id"] and d["source"] == "simulated" and d["difficulty"] == "easy"
+    assert d["engine"] == "clasico"
     assert d["ground_truth"] == scene["ground_truth"]
     ev = d["evaluation"]
     assert set(ev) == {"matched", "expected", "exact_matches", "char_accuracy", "correct"}
@@ -54,7 +55,9 @@ def test_detect_scene(client):
     assert ev["correct"] is True and ev["char_accuracy"] == 1.0
     assert d["processing_ms"] > 0 and len(d["stages"]) == 8
     for p in d["plates"]:
-        assert set(p) == {"text", "confidence", "bbox", "chars", "crop_url", "valid_format"}
+        assert set(p) == {"text", "confidence", "bbox", "chars", "crop_url", "valid_format",
+                          "raw_text", "detection_confidence"}
+        assert p["raw_text"] is None and p["detection_confidence"] is None  # solo los llena el motor "ml"
         assert client.get(p["crop_url"]).status_code == 200
     assert client.get(d["annotated_url"]).status_code == 200
     assert client.get(d["image_url"]).status_code == 200
@@ -81,10 +84,11 @@ def test_upload_with_plates(client):
     s = generate_scene(31, "medium")
     bgr = cv2.cvtColor(np.asarray(s.image), cv2.COLOR_RGB2BGR)
     ok, jpg = cv2.imencode(".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, 95])
-    r = client.post("/api/detect/upload", files={"file": ("escena.jpg", jpg.tobytes(), "image/jpeg")})
+    r = client.post("/api/detect/upload", files={"file": ("escena.jpg", jpg.tobytes(), "image/jpeg")},
+                    data={"engine": "clasico"})
     assert r.status_code == 200
     d = r.json()
-    assert d["source"] == "upload" and d["scene_id"] is None
+    assert d["source"] == "upload" and d["scene_id"] is None and d["engine"] == "clasico"
     assert d["ground_truth"] is None and d["evaluation"] is None and d["difficulty"] is None
     assert {p["text"] for p in d["plates"]} == {p.text for p in s.plates}
 

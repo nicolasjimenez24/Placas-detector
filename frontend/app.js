@@ -91,6 +91,8 @@
   const nfSec = new Intl.NumberFormat(LOCALE, { style: 'unit', unit: 'second', unitDisplay: 'short', minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const nfInt = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 0 });
   const nfDec = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 1 });
+  const nfDec3 = new Intl.NumberFormat(LOCALE, { maximumFractionDigits: 3 });
+  const nfCompact = new Intl.NumberFormat(LOCALE, { notation: 'compact', maximumFractionDigits: 1 });
   const dfDate = new Intl.DateTimeFormat(LOCALE, { dateStyle: 'medium', timeStyle: 'short' });
   const dfTime = new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -103,10 +105,18 @@
     sec: (v) => nfSec.format(num(v)),
     int: (v) => nfInt.format(num(v)),
     dec: (v) => nfDec.format(num(v)),
+    dec3: (v) => nfDec3.format(num(v)),
+    compact: (v) => nfCompact.format(num(v)),
     date: (iso) => { const d = new Date(iso); return isNaN(d) ? '—' : dfDate.format(d); },
     time: (iso) => { const d = new Date(iso); return isNaN(d) ? '—' : dfTime.format(d); },
     bytes: (b) => b < 1024 * 1024 ? `${nfDec.format(b / 1024)} KB` : `${nfDec.format(b / 1024 / 1024)} MB`,
   };
+  const isNum = (v) => typeof v === 'number' && isFinite(v);
+  /** Formatea solo si hay número; si falta el dato devuelve «—». */
+  const orDash = (f) => (v) => (isNum(v) ? f(v) : '—');
+  const pctOr = orDash(fmt.pct);
+  const msOr = orDash(fmt.ms);
+  const intOr = orDash(fmt.int);
 
   const DIFF_LABEL = { easy: 'Fácil', medium: 'Media', hard: 'Difícil' };
   const SOURCE_LABEL = { simulated: 'Simulada', upload: 'Subida' };
@@ -128,6 +138,8 @@
     mascara_amarilla: 'Máscara amarilla', contornos_y_filtros: 'Contornos y filtros',
     binarizacion_segmentacion: 'Binarización y segmentación', ocr_plantillas: 'OCR por plantillas', anotacion: 'Anotación',
     annotate: 'Anotación', annotation: 'Anotación', render: 'Anotación', draw: 'Anotación', save: 'Guardado', io: 'E/S', total: 'Total',
+    // Motor "ml" (backend/app/ml_inference.py)
+    yolo_deteccion: 'Detección YOLO', recorte: 'Recorte', crnn_lectura: 'Lectura CRNN', formato_colombiano: 'Formato colombiano',
   };
   function stageLabel(name) {
     const raw = String(name ?? '').trim();
@@ -146,6 +158,28 @@
   const LEVEL_LABEL = { high: 'alta', mid: 'media', low: 'baja' };
 
   const normPlate = (t) => String(t ?? '').toUpperCase().replace(/\s+/g, '');
+
+  /* Motores de detección: "ml" (YOLO + CRNN entrenados) y "clasico" (reglas). */
+  const ENGINE_LABEL = { ml: 'Modelo entrenado', clasico: 'Clásico' };
+  const ENGINE_TITLE = {
+    ml: 'Motor: detector YOLO + lector CRNN entrenados con fotos reales',
+    clasico: 'Motor clásico: color amarillo, contornos y OCR por plantillas (pensado para escenas simuladas)',
+  };
+  const ENGINE_HINT = {
+    ml: 'Detector YOLO y lector CRNN entrenados con fotos reales: lee placas colombianas reales (formato ABC123).',
+    clasico: 'Pipeline de reglas (color amarillo, contornos y OCR por plantillas) pensado para las escenas simuladas (formato AAA-123).',
+  };
+  const ENGINE_FORMAT = { ml: 'ABC123 (Colombia)', clasico: 'AAA-123' };
+  /** Registros antiguos sin campo engine se consideran del motor clásico. */
+  const detEngine = (d) => (d && d.engine === 'ml' ? 'ml' : 'clasico');
+
+  function engineBadge(engine, { xs = false } = {}) {
+    const e = engine === 'ml' ? 'ml' : 'clasico';
+    return h('span', { className: `badge engine-badge engine-badge--${e}${xs ? ' badge--xs' : ''}`, attrs: { title: ENGINE_TITLE[e] } },
+      icon(e === 'ml' ? 'model' : 'flask'),
+      h('span', { className: 'sr-only', text: 'Motor: ' }),
+      ENGINE_LABEL[e]);
+  }
 
   /* ------------------------------------------------------------------ */
   /* API                                                                  */
@@ -205,11 +239,13 @@
     health: () => request('/api/health', { timeout: 5000 }),
     simulate: (p) => request('/api/simulate', { method: 'POST', body: p, timeout: 60000 }),
     detect: (sceneId) => request('/api/detect', { method: 'POST', body: { scene_id: sceneId }, timeout: 60000 }),
-    upload: (file) => {
+    upload: (file, engine) => {
       const fd = new FormData();
       fd.append('file', file, file.name);
+      if (engine) fd.append('engine', engine);
       return request('/api/detect/upload', { method: 'POST', form: fd, timeout: 90000 });
     },
+    model: () => request('/api/model', { timeout: 15000 }),
     batch: (p) => request('/api/detect/batch', { method: 'POST', body: p, timeout: 300000 }),
     scenes: (limit = 12) => request(`/api/scenes?limit=${encodeURIComponent(limit)}`),
     history: async (limit = 200) => {
@@ -238,13 +274,15 @@
     // Opciones del visor (compartidas)
     viewOpts: { mode: 'original', boxes: true, gt: true },
     // Subida
-    upload: { file: null, url: null, det: null, busy: false },
+    upload: { file: null, url: null, det: null, busy: false, engine: 'ml' },
     // Lotes
     batch: { data: null, busy: false, onlyErrors: false, params: null },
     // Historial
-    history: { items: [], loaded: false, loading: false, q: '', source: 'all', result: 'all' },
+    history: { items: [], loaded: false, loading: false, q: '', source: 'all', result: 'all', engine: 'all' },
     // Estadísticas
     stats: { data: null, loading: false },
+    // Modelo entrenado: { available, card } de GET /api/model
+    model: { data: null, loading: false, error: null, promise: null },
   };
 
   /* ------------------------------------------------------------------ */
@@ -332,13 +370,13 @@
   /* ------------------------------------------------------------------ */
   /* Componentes de placa                                                 */
   /* ------------------------------------------------------------------ */
-  function plateEl(text, { small = false, muted = false, label } = {}) {
+  function plateEl(text, { small = false, muted = false, label, city = 'CIUDAD SIM' } = {}) {
     return h('div', {
       className: 'plate' + (small ? ' plate--sm' : '') + (muted ? ' plate--muted' : ''),
       attrs: { role: 'img', 'aria-label': label || `Placa ${text || 'sin lectura'}` },
     },
     h('span', { className: 'plate__text', text: text || '———' }),
-    h('span', { className: 'plate__city', text: 'CIUDAD SIM' }));
+    h('span', { className: 'plate__city', text: city }));
   }
 
   function meterEl(label, value) {
@@ -419,11 +457,13 @@
   /* Visor de resultados (compartido por todas las vistas)                */
   /* ------------------------------------------------------------------ */
   /**
-   * model = { det?, imageUrl, width?, height?, loading?, error?, title?, subtitle?, onRetry?, onRedetect? }
+   * model = { det?, imageUrl, width?, height?, loading?, error?, title?, subtitle?, onRetry?, onRedetect?, engine? }
+   * (engine: motor a mostrar mientras aún no hay Detection; si hay det se usa det.engine)
    */
   function renderViewer(host, model) {
     host._viewerModel = model;
     const det = model.det || null;
+    const engine = det ? detEngine(det) : (model.engine || null);
     const width = (det && det.width) || model.width || 960;
     const height = (det && det.height) || model.height || 600;
     const gts = det ? (Array.isArray(det.ground_truth) ? det.ground_truth : null) : (model.groundTruth || null);
@@ -502,7 +542,9 @@
       h('span', { text }));
     const toolbar = h('div', { className: 'viewer__toolbar' },
       h('div', { className: 'viewer__heading' },
-        h('h2', { className: 'card__title' }, icon(det && det.source === 'upload' ? 'upload' : 'car'), model.title || 'Resultado'),
+        h('div', { className: 'viewer__heading-row' },
+          h('h2', { className: 'card__title' }, icon(det && det.source === 'upload' ? 'upload' : 'car'), model.title || 'Resultado'),
+          engine ? engineBadge(engine) : null),
         model.subtitle ? h('p', { className: 'xsmall muted', text: model.subtitle }) : null),
       h('div', { className: 'spacer' }),
       h('div', { className: 'segmented segmented--sm', attrs: { role: 'radiogroup', 'aria-label': 'Imagen mostrada (tecla O)' } },
@@ -538,12 +580,14 @@
       if (!plates.length) {
         side.append(emptyState({
           art: 'plate', compact: true, title: 'No se detectaron placas',
-          text: det.source === 'upload'
-            ? 'El detector busca placas amarillas con formato AAA-123. Prueba con una imagen más nítida, mejor iluminada o con la placa más grande.'
-            : 'El pipeline no encontró regiones candidatas válidas en esta escena.',
+          text: engine === 'ml'
+            ? 'El modelo entrenado no encontró ninguna placa. Prueba con una foto donde la placa se vea completa, nítida y no demasiado pequeña.'
+            : det.source === 'upload'
+              ? 'El motor clásico busca placas amarillas con formato AAA-123 (escenas simuladas). Para fotos reales usa el motor «Modelo entrenado», o prueba con una imagen más nítida y mejor iluminada.'
+              : 'El pipeline no encontró regiones candidatas válidas en esta escena.',
         }));
       }
-      plates.forEach((p, i) => side.append(plateCardEl(p, i, plates.length, gts, match.pairs[i])));
+      plates.forEach((p, i) => side.append(plateCardEl(p, i, plates.length, gts, match.pairs[i], engine)));
       if (gts && match.missed.length) {
         side.append(h('div', { className: 'missed-card', attrs: { role: 'note' } },
           h('h4', null, icon('alert'), `${match.missed.length} placa${match.missed.length === 1 ? '' : 's'} sin detectar`),
@@ -651,22 +695,35 @@
     return card;
   }
 
-  function plateCardEl(p, i, total, gts, gi) {
+  function plateCardEl(p, i, total, gts, gi, engine = 'clasico') {
     const card = h('article', { className: 'plate-card', tabIndex: 0, dataset: { idx: i }, attrs: { 'aria-label': `Placa ${i + 1} de ${total}: ${p.text || 'sin lectura'}` } });
     card.style.animationDelay = `${Math.min(i, 6) * 60}ms`;
+    const fmtName = ENGINE_FORMAT[engine] || ENGINE_FORMAT.clasico;
     card.append(h('div', { className: 'plate-card__top' },
       h('span', { className: 'plate-card__idx', text: `#${i + 1} de ${total}` }),
       p.valid_format
-        ? h('span', { className: 'badge badge--ok', attrs: { title: 'Cumple el formato AAA-123' } }, icon('check'), 'Formato válido')
-        : h('span', { className: 'badge badge--warn', attrs: { title: 'No cumple el formato AAA-123' } }, icon('alert'), 'Formato inválido')));
+        ? h('span', { className: 'badge badge--ok', attrs: { title: `Cumple el formato ${fmtName}` } }, icon('check'), 'Formato válido')
+        : h('span', { className: 'badge badge--warn', attrs: { title: `No cumple el formato ${fmtName}` } }, icon('alert'), 'Formato inválido')));
     const aside = h('div', { className: 'plate-card__aside' }, meterEl('Confianza global', p.confidence));
     if (p.crop_url) {
       aside.append(h('figure', { className: 'crop' },
         h('img', { src: p.crop_url, alt: `Recorte de la placa ${p.text}`, loading: 'lazy', decoding: 'async' }),
         h('figcaption', { text: 'Recorte real' })));
     }
-    card.append(h('div', { className: 'plate-card__hero' }, plateEl(p.text), aside));
+    card.append(h('div', { className: 'plate-card__hero' }, plateEl(p.text, { city: engine === 'ml' ? 'COLOMBIA' : 'CIUDAD SIM' }), aside));
     card.append(charsEl(p.chars));
+
+    // Datos extra del motor entrenado (null en el clásico): lectura cruda del CRNN y confianza del detector YOLO.
+    const raw = typeof p.raw_text === 'string' ? p.raw_text.trim() : '';
+    const showRaw = raw !== '' && raw !== String(p.text ?? '').trim();
+    const hasDetConf = isNum(p.detection_confidence);
+    if (showRaw || hasDetConf) {
+      card.append(h('dl', { className: 'plate-extra' },
+        showRaw ? h('div', { className: 'plate-extra__row', attrs: { title: 'Lectura del lector CRNN antes de ajustarla al formato colombiano ABC123' } },
+          h('dt', { text: 'Lectura sin formato:' }), h('dd', { className: 'mono', text: raw })) : null,
+        hasDetConf ? h('div', { className: 'plate-extra__row', attrs: { title: 'Confianza del detector YOLO al localizar la placa. La confianza global es esta × la confianza media de lectura.' } },
+          h('dt', { text: 'Confianza del detector:' }), h('dd', { className: 'mono', text: fmt.pct(p.detection_confidence) })) : null));
+    }
 
     if (gts) {
       const cmp = h('div', { className: 'gt-compare' });
@@ -836,6 +893,140 @@
     return node;
   }
 
+  /**
+   * Líneas por época con eje secundario opcional.
+   * xs: [num]; series: [{label, color, values:[num|null], format, axis?: 'left'|'right', dash?: bool}]
+   * yLeft/yRight: {max?, format, title}; marker: {x, label} (línea vertical, p. ej. mejor época).
+   * Accesible: el SVG es enfocable; ← → Inicio Fin recorren las épocas y una región viva anuncia los valores.
+   */
+  function lineChart({ xs, series, yLeft = {}, yRight = null, height = 260, ariaLabel, xLabel = 'Época', xFormat = (v) => fmt.int(v), marker = null }) {
+    const n = xs.length;
+    return mountChart((W, tip) => {
+      const hasRight = !!yRight && series.some((se) => se.axis === 'right');
+      const m = { t: 24, r: hasRight ? 54 : 16, b: 40, l: 50 };
+      const iw = Math.max(20, W - m.l - m.r), ih = height - m.t - m.b;
+      const valsOf = (right) => series.filter((se) => (se.axis === 'right') === right).flatMap((se) => se.values).filter(isNum);
+      const lsc = yLeft.max ? { max: yLeft.max, step: yLeft.max / 4, ticks: 4 } : niceScale(Math.max(0, ...valsOf(false)) * 1.05 || 1);
+      const rsc = hasRight ? niceScale(Math.max(0, ...valsOf(true)) * 1.05 || 1) : null;
+      const x0 = num(xs[0]), x1 = num(xs[n - 1]);
+      const span = (x1 - x0) || 1;
+      const px = (i) => (n <= 1 ? m.l + iw / 2 : m.l + ((num(xs[i]) - x0) / span) * iw);
+      const pyL = (v) => m.t + ih - (clamp(v, 0, lsc.max) / lsc.max) * ih;
+      const pyR = (v) => m.t + ih - (clamp(v, 0, rsc.max) / rsc.max) * ih;
+      const py = (se, v) => (se.axis === 'right' && rsc ? pyR(v) : pyL(v));
+      const lf = yLeft.format || fmt.dec;
+      const rf = (yRight && yRight.format) || fmt.dec;
+
+      const svg = s('svg', {
+        class: 'chart chart--line', width: W, height, viewBox: `0 0 ${W} ${height}`, role: 'img', tabindex: 0,
+        'aria-label': `${ariaLabel || 'Gráfico de líneas'}. Enfoca el gráfico y usa las flechas izquierda y derecha para recorrer las épocas.`,
+      });
+      for (let k = 0; k <= lsc.ticks; k++) {
+        const v = lsc.step * k, y = pyL(v);
+        svg.append(s('line', { class: k === 0 ? 'axis-line' : 'grid-line', x1: m.l, x2: m.l + iw, y1: y, y2: y }));
+        svg.append(s('text', { x: m.l - 8, y: y + 4, 'text-anchor': 'end', text: lf(v) }));
+      }
+      if (rsc) {
+        for (let k = 0; k <= rsc.ticks; k++) {
+          const v = rsc.step * k;
+          svg.append(s('text', { x: m.l + iw + 8, y: pyR(v) + 4, 'text-anchor': 'start', text: rf(v) }));
+        }
+        svg.append(s('line', { class: 'axis-line', x1: m.l + iw, x2: m.l + iw, y1: m.t, y2: m.t + ih }));
+      }
+      svg.append(s('line', { class: 'axis-line', x1: m.l, x2: m.l, y1: m.t, y2: m.t + ih }));
+      if (yLeft.title) svg.append(s('text', { class: 'axis-title', x: 4, y: 12, 'text-anchor': 'start', text: yLeft.title }));
+      if (rsc && yRight.title) svg.append(s('text', { class: 'axis-title', x: W - 4, y: 12, 'text-anchor': 'end', text: yRight.title }));
+      svg.append(s('text', { class: 'axis-title', x: m.l + iw / 2, y: height - 4, 'text-anchor': 'middle', text: xLabel }));
+
+      // Marcas del eje X sin solaparse.
+      const every = Math.max(1, Math.ceil(n / Math.max(2, Math.floor(iw / 46))));
+      let lastTick = -Infinity;
+      for (let i = 0; i < n; i++) {
+        const isLast = i === n - 1;
+        if (i % every !== 0 && !(isLast && i - lastTick >= every / 2)) continue;
+        lastTick = i;
+        const x = px(i);
+        svg.append(s('line', { class: 'axis-line', x1: x, x2: x, y1: m.t + ih, y2: m.t + ih + 4 }));
+        svg.append(s('text', { x, y: m.t + ih + 17, 'text-anchor': 'middle', text: xFormat(xs[i]) }));
+      }
+
+      if (marker && isNum(marker.x)) {
+        const mi = xs.findIndex((v) => num(v) === marker.x);
+        if (mi >= 0) {
+          const x = px(mi);
+          svg.append(s('line', { class: 'marker-line', x1: x, x2: x, y1: m.t, y2: m.t + ih }));
+          svg.append(s('text', { class: 'marker-label', x: x > m.l + iw - 90 ? x - 4 : x + 4, y: m.t + 11, 'text-anchor': x > m.l + iw - 90 ? 'end' : 'start', text: marker.label }));
+        }
+      }
+
+      series.forEach((se) => {
+        let d = '', pen = false;
+        se.values.forEach((v, i) => {
+          if (!isNum(v)) { pen = false; return; }
+          d += `${pen ? 'L' : 'M'}${px(i).toFixed(1)},${py(se, v).toFixed(1)}`;
+          pen = true;
+        });
+        if (d) svg.append(s('path', { class: 'line', d, style: { stroke: se.color }, 'stroke-dasharray': se.dash ? '5 4' : null }));
+        if (n <= 40) se.values.forEach((v, i) => { if (isNum(v)) svg.append(s('circle', { class: 'line-dot', cx: px(i), cy: py(se, v), r: 2.4, style: { fill: se.color } })); });
+      });
+
+      const cursor = s('g', { class: 'cursor', style: { display: 'none' } });
+      const cLine = s('line', { class: 'cursor-line', x1: 0, x2: 0, y1: m.t, y2: m.t + ih });
+      const cDots = series.map((se) => s('circle', { class: 'cursor-dot', r: 4.5, style: { fill: se.color } }));
+      cursor.append(cLine, ...cDots);
+      svg.append(cursor);
+      const hit = s('rect', { class: 'hit', x: m.l, y: m.t, width: iw, height: ih });
+      svg.append(hit);
+      const live = h('div', { className: 'sr-only', attrs: { 'aria-live': 'polite' } });
+
+      let cur = -1;
+      const show = (i) => {
+        if (i < 0 || i >= n) return;
+        cur = i;
+        const x = px(i);
+        cursor.style.display = '';
+        cLine.setAttribute('x1', x); cLine.setAttribute('x2', x);
+        series.forEach((se, k) => {
+          const v = se.values[i];
+          if (isNum(v)) { cDots[k].setAttribute('cx', x); cDots[k].setAttribute('cy', py(se, v)); cDots[k].style.display = ''; }
+          else cDots[k].style.display = 'none';
+        });
+        const lines = [`${xLabel} ${xFormat(xs[i])}`, ...series.map((se) => `${se.label}: ${isNum(se.values[i]) ? se.format(se.values[i]) : 'sin datos'}`)];
+        tip.show(lines, clamp(x, 100, W - 100), m.t + 6);
+        live.textContent = lines.join('. ');
+      };
+      const hide = () => { cursor.style.display = 'none'; tip.hide(); };
+      const nearest = (xx) => {
+        if (n <= 1) return 0;
+        const t = x0 + ((xx - m.l) / iw) * span;
+        let best = 0;
+        for (let i = 1; i < n; i++) if (Math.abs(num(xs[i]) - t) < Math.abs(num(xs[best]) - t)) best = i;
+        return best;
+      };
+      hit.addEventListener('mousemove', (e) => {
+        const r = svg.getBoundingClientRect();
+        show(nearest((e.clientX - r.left) * (W / (r.width || W))));
+      });
+      hit.addEventListener('mouseleave', () => { if (document.activeElement !== svg) hide(); });
+      svg.addEventListener('focus', () => show(cur >= 0 ? cur : n - 1));
+      svg.addEventListener('blur', hide);
+      svg.addEventListener('keydown', (e) => {
+        let j = null;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') j = Math.min(n - 1, cur + 1);
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') j = Math.max(0, cur - 1);
+        else if (e.key === 'Home') j = 0;
+        else if (e.key === 'End') j = n - 1;
+        if (j === null) return;
+        e.preventDefault(); e.stopPropagation();
+        show(j);
+      });
+
+      const frag = document.createDocumentFragment();
+      frag.append(svg, live);
+      return frag;
+    });
+  }
+
   function dataTableDetails(caption, headers, rows) {
     return h('details', { className: 'table-toggle' },
       h('summary', { text: 'Ver datos en tabla' }),
@@ -956,6 +1147,8 @@
     }
     if (state.view === 'history') loadHistory();
     if (state.view === 'stats') loadStats();
+    // Saber si el modelo entrenado existe (afecta al selector de motor de la subida).
+    loadModel({ quiet: state.view !== 'model' });
   }
 
   /* ------------------------------------------------------------------ */
@@ -975,7 +1168,7 @@
   /* ------------------------------------------------------------------ */
   /* Navegación                                                           */
   /* ------------------------------------------------------------------ */
-  const VIEWS = ['detector', 'upload', 'batch', 'history', 'stats'];
+  const VIEWS = ['detector', 'upload', 'batch', 'history', 'stats', 'model'];
   function switchView(name, { focus = false } = {}) {
     if (!VIEWS.includes(name)) name = 'detector';
     state.view = name;
@@ -989,7 +1182,11 @@
     if (location.hash !== `#${name}`) history.replaceState(null, '', `#${name}`);
     if (name === 'history') loadHistory();
     if (name === 'stats') loadStats();
-    if (name === 'upload' && !state.upload.det && !state.upload.busy) renderUploadViewer();
+    if (name === 'model') loadModel();
+    if (name === 'upload') {
+      if (!state.model.data && !state.model.loading) loadModel({ quiet: true });
+      if (!state.upload.det && !state.upload.busy) renderUploadViewer();
+    }
   }
 
   function setupNav() {
@@ -1323,16 +1520,39 @@
     renderUploadViewer();
   }
 
+  /* Selector de motor ------------------------------------------------- */
+  function setEngine(value) {
+    const u = state.upload;
+    const mlDisabled = $('#engine-ml').disabled;
+    u.engine = value === 'ml' && !mlDisabled ? 'ml' : 'clasico';
+    $('#engine-ml').checked = u.engine === 'ml';
+    $('#engine-clasico').checked = u.engine === 'clasico';
+    $('#engine-hint').textContent = ENGINE_HINT[u.engine];
+  }
+
+  /** Habilita o deshabilita la opción «Modelo entrenado» según GET /api/model. */
+  function applyEngineAvailability() {
+    const md = state.model.data;
+    const unavailable = !!md && md.available === false;
+    const ml = $('#engine-ml');
+    ml.disabled = unavailable;
+    $('#engine-ml-label').classList.toggle('is-disabled', unavailable);
+    $('#engine-ml-label').title = unavailable ? 'No disponible: el modelo entrenado no existe en el servidor' : '';
+    $('#engine-note').hidden = !unavailable;
+    // Por defecto se usa el modelo entrenado, salvo que el usuario haya elegido otro motor.
+    setEngine(unavailable ? 'clasico' : (state.upload.engineChosen ? state.upload.engine : 'ml'));
+  }
+
   function renderUploadViewer(extra = {}) {
     const host = $('#upload-viewer');
     const u = state.upload;
     if (u.busy) {
       const dims = $('#upload-preview');
-      renderViewer(host, { loading: true, imageUrl: u.url, width: dims.naturalWidth || 960, height: dims.naturalHeight || 600, title: 'Imagen subida', subtitle: u.file ? u.file.name : '' });
+      renderViewer(host, { loading: true, engine: u.busyEngine || u.engine, imageUrl: u.url, width: dims.naturalWidth || 960, height: dims.naturalHeight || 600, title: 'Imagen subida', subtitle: u.file ? u.file.name : '' });
     } else if (u.det) {
       renderViewer(host, { det: u.det, title: 'Imagen subida', subtitle: `${u.file ? u.file.name + ' · ' : ''}${u.det.width}×${u.det.height} px · sin ground truth` });
     } else if (extra.error) {
-      renderViewer(host, { error: extra.error, imageUrl: u.url, title: 'Imagen subida', onRetry: uploadDetect });
+      renderViewer(host, { error: extra.error, engine: extra.engine, imageUrl: u.url, title: 'Imagen subida', onRetry: uploadDetect });
     } else if (!u.file) {
       host.replaceChildren(emptyState({ art: 'image', compact: true, title: 'Sin resultados todavía', text: 'Selecciona una imagen y pulsa «Detectar placas» para ver las cajas, recortes y lecturas.' }));
     } else {
@@ -1344,26 +1564,39 @@
     const u = state.upload;
     if (!u.file || u.busy) return;
     u.busy = true; u.det = null;
+    const engine = u.engine;
+    u.busyEngine = engine;
     setBusy($('#btn-upload-detect'), true);
     $('#btn-upload-clear').disabled = true;
     renderUploadViewer();
     const started = performance.now();
     try {
-      const det = await api.upload(u.file);
+      const det = await api.upload(u.file, engine);
       const el = performance.now() - started;
       if (!prefersReducedMotion() && el < 450) await sleep(450 - el);
       u.det = det;
       state.history.loaded = false; state.stats.data = null;
       const n = Array.isArray(det.plates) ? det.plates.length : 0;
-      if (n) toast('success', `${n} placa${n === 1 ? '' : 's'} detectada${n === 1 ? '' : 's'}`, det.plates.map((p) => p.text).join(' · '));
-      else toast('warn', 'No se detectaron placas', 'Revisa que la imagen contenga placas amarillas visibles con formato AAA-123.');
+      const by = `Motor: ${ENGINE_LABEL[detEngine(det)].toLowerCase()}`;
+      if (n) toast('success', `${n} placa${n === 1 ? '' : 's'} detectada${n === 1 ? '' : 's'}`, `${det.plates.map((p) => p.text).join(' · ')} · ${by}`);
+      else if (detEngine(det) === 'ml') toast('warn', 'No se detectaron placas', 'Prueba con una foto donde la placa se vea completa y nítida.');
+      else toast('warn', 'No se detectaron placas', 'El motor clásico busca placas amarillas con formato AAA-123. Para fotos reales usa «Modelo entrenado».');
       u.busy = false;
       renderUploadViewer();
     } catch (e) {
       u.busy = false;
-      toastError('Error al analizar la imagen', e);
-      renderUploadViewer({ error: e.message });
+      if (engine === 'ml' && e.status === 503) {
+        // El servidor no tiene el modelo: desactivar la opción y pasar al motor clásico.
+        state.model.data = { available: false, card: state.model.data ? state.model.data.card : null };
+        applyEngineAvailability();
+        if (state.view === 'model') renderModel();
+        toast('warn', 'Modelo entrenado no disponible', `${e.message} Se cambió al motor clásico; pulsa «Detectar placas» de nuevo.`);
+      } else {
+        toastError('Error al analizar la imagen', e);
+      }
+      renderUploadViewer({ error: e.message, engine });
     } finally {
+      u.busyEngine = null;
       setBusy($('#btn-upload-detect'), false);
       $('#btn-upload-detect').disabled = !u.file;
       $('#btn-upload-clear').disabled = !u.file;
@@ -1390,6 +1623,13 @@
     window.addEventListener('drop', (e) => e.preventDefault());
     $('#btn-upload-detect').addEventListener('click', uploadDetect);
     $('#btn-upload-clear').addEventListener('click', clearUpload);
+    $$('input[name="engine"]').forEach((r) => r.addEventListener('change', () => {
+      if (!r.checked) return;
+      state.upload.engineChosen = true;
+      setEngine(r.value);
+    }));
+    $('#engine-note-link').addEventListener('click', () => switchView('model'));
+    setEngine(state.upload.engine);
     renderUploadViewer();
   }
 
@@ -1526,8 +1766,9 @@
   }
 
   /** Fila de tabla reutilizada por Lotes e Historial. */
-  function detectionRow(d, { index, onOpen, showDate }) {
+  function detectionRow(d, { index, onOpen, showDate, showEngine = showDate }) {
     const plates = Array.isArray(d.plates) ? d.plates : [];
+    const eng = detEngine(d);
     const gt = joinTexts(d.ground_truth);
     const gtSet = new Set(gt.map(normPlate));
     const avgC = avgConfidence(plates);
@@ -1536,14 +1777,15 @@
     else result = plates.length ? h('span', { className: 'badge' }, 'Sin GT') : h('span', { className: 'badge badge--warn' }, 'Sin placas');
     const tr = h('tr', {
       className: 'is-clickable', tabIndex: 0,
-      attrs: { 'aria-label': `${showDate ? fmt.date(d.created_at) : 'Escena ' + index}: detectado ${plates.map((p) => p.text).join(', ') || 'nada'}. Abrir detalle.` },
+      attrs: { 'aria-label': `${showDate ? fmt.date(d.created_at) : 'Escena ' + index}${showEngine ? `, motor ${ENGINE_LABEL[eng].toLowerCase()}` : ''}: detectado ${plates.map((p) => p.text).join(', ') || 'nada'}. Abrir detalle.` },
       on: { click: onOpen, keydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(); } } },
     },
     h('td', null, h('div', { style: 'display:flex;align-items:center;gap:10px' },
       h('img', { className: 'mini', src: d.image_url, alt: '', loading: 'lazy', decoding: 'async' }),
       h('div', null,
         h('div', { className: 'small', style: 'font-weight:600', text: showDate ? fmt.date(d.created_at) : `#${index}` }),
-        h('div', { className: 'xsmall muted', text: showDate ? `${SOURCE_LABEL[d.source] || d.source}${d.difficulty ? ' · ' + diffLabel(d.difficulty) : ''}` : `ID ${d.id}` })))),
+        h('div', { className: 'xsmall muted', text: showDate ? `${SOURCE_LABEL[d.source] || d.source}${d.difficulty ? ' · ' + diffLabel(d.difficulty) : ''}` : `ID ${d.id}` }),
+        showEngine ? h('div', { className: 'row-engine' }, engineBadge(eng, { xs: true })) : null))),
     h('td', null, gt.length ? h('div', { className: 'plate-list' }, gt.map((t) => h('span', { className: 'plate-text', text: t }))) : h('span', { className: 'muted', text: '—' })),
     h('td', null, plates.length ? h('div', { className: 'plate-list' }, plates.map((p) => h('span', { className: 'plate-text' + (d.ground_truth && !gtSet.has(normPlate(p.text)) ? ' is-err' : ''), text: p.text || '?' }))) : h('span', { className: 'muted', text: 'Ninguna' })),
     h('td', null, result),
@@ -1590,6 +1832,7 @@
     const qLoose = q.replace(/-/g, '');
     return hs.items.filter((d) => {
       if (hs.source !== 'all' && d.source !== hs.source) return false;
+      if (hs.engine !== 'all' && detEngine(d) !== hs.engine) return false;
       const plates = Array.isArray(d.plates) ? d.plates : [];
       if (hs.result === 'correct' && !(d.evaluation && d.evaluation.correct)) return false;
       if (hs.result === 'incorrect' && !(d.evaluation && !d.evaluation.correct)) return false;
@@ -1630,7 +1873,7 @@
         h('table', { className: 'data-table' },
           h('caption', { className: 'sr-only', text: 'Historial de detecciones. Pulsa Enter sobre una fila para abrir el detalle.' }),
           h('thead', null, h('tr', null,
-            h('th', { attrs: { scope: 'col' }, text: 'Fecha / origen' }),
+            h('th', { attrs: { scope: 'col' }, text: 'Fecha / origen / motor' }),
             h('th', { attrs: { scope: 'col' }, text: 'Esperado' }),
             h('th', { attrs: { scope: 'col' }, text: 'Detectado' }),
             h('th', { attrs: { scope: 'col' }, text: 'Resultado' }),
@@ -1646,8 +1889,8 @@
 
   function resetHistoryFilters() {
     const hs = state.history;
-    hs.q = ''; hs.source = 'all'; hs.result = 'all';
-    $('#history-q').value = ''; $('#history-source').value = 'all'; $('#history-result').value = 'all';
+    hs.q = ''; hs.source = 'all'; hs.result = 'all'; hs.engine = 'all';
+    $('#history-q').value = ''; $('#history-source').value = 'all'; $('#history-result').value = 'all'; $('#history-engine').value = 'all';
     renderHistory();
   }
 
@@ -1698,6 +1941,7 @@
     $('#history-q').addEventListener('input', (e) => { clearTimeout(deb); deb = setTimeout(() => { state.history.q = e.target.value; renderHistory(); }, 120); });
     $('#history-source').addEventListener('change', (e) => { state.history.source = e.target.value; renderHistory(); });
     $('#history-result').addEventListener('change', (e) => { state.history.result = e.target.value; renderHistory(); });
+    $('#history-engine').addEventListener('change', (e) => { state.history.engine = e.target.value; renderHistory(); });
     $('#btn-history-refresh').addEventListener('click', () => loadHistory({ force: true }));
     $('#btn-history-clear').addEventListener('click', clearHistory);
   }
@@ -1795,6 +2039,365 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /* Vista 6: Modelo entrenado                                            */
+  /* ------------------------------------------------------------------ */
+  const TRAIN_CMDS = ['python ml/train_detector.py', 'python ml/train_ocr.py', 'python ml/evaluate_and_export.py'];
+  const SPLIT_LABEL = { train: 'Entrenamiento', val: 'Validación', test: 'Prueba' };
+  const OCR_SPLITS = [
+    { key: 'real_test', title: 'Fotos reales (varios países)', sub: 'Recortes de fotos reales del dataset público (placas de distintos países, etiquetas automáticas).' },
+    { key: 'synth_test', title: 'Sintéticas colombianas', sub: 'Placas colombianas generadas por ordenador (formato ABC123, etiquetas exactas).' },
+  ];
+
+  function loadModel({ force = false, quiet = false } = {}) {
+    const md = state.model;
+    if (md.loading) return md.promise;
+    if (md.data && !force) { if (state.view === 'model') renderModel(); return Promise.resolve(md.data); }
+    md.loading = true;
+    const btn = $('#btn-model-refresh');
+    setBusy(btn, true);
+    if (state.view === 'model' && !md.data) renderModel();
+    md.promise = (async () => {
+      try {
+        const r = await api.model();
+        md.data = { available: !!(r && r.available), card: (r && r.card && typeof r.card === 'object') ? r.card : null };
+        md.error = null;
+      } catch (e) {
+        md.error = e.message;
+        if (!quiet) toastError('No se pudo cargar la ficha del modelo', e);
+      } finally {
+        md.loading = false;
+        setBusy(btn, false);
+        applyEngineAvailability();
+        if (state.view === 'model') renderModel();
+      }
+      return md.data;
+    })();
+    return md.promise;
+  }
+
+  function renderModel() {
+    const host = $('#model-content');
+    const md = state.model;
+    if (md.loading && !md.data) {
+      host.replaceChildren(h('div', { className: 'skel-stack', attrs: { 'aria-label': 'Cargando ficha del modelo' } },
+        skel('skel-card', { height: '150px' }),
+        h('div', { className: 'kpis' }, [0, 1, 2, 3, 4].map(() => skel('skel-card', { height: '120px' }))),
+        h('div', { className: 'charts' }, skel('skel-card', { height: '300px' }), skel('skel-card', { height: '300px' }))));
+      return;
+    }
+    if (!md.data) {
+      host.replaceChildren(emptyState({ art: 'chart', title: 'Ficha del modelo no disponible', text: md.error || 'Comprueba la conexión con el backend.',
+        action: h('button', { className: 'btn btn--ghost', type: 'button', on: { click: () => loadModel({ force: true }) } }, icon('refresh'), h('span', { text: 'Reintentar' })) }));
+      return;
+    }
+    const { available, card } = md.data;
+    if (!available || !card) { host.replaceChildren(modelEmptyEl(available, !!card)); return; }
+    const det = card.detector || {};
+    const ocr = card.ocr || {};
+    host.replaceChildren(h('div', { className: 'stats-grid model-grid' },
+      modelPipelineEl(card),
+      card.colombia_real ? colombiaSectionEl(card.colombia_real) : null,
+      datasetCardEl(card.dataset || {}),
+      detectorSectionEl(det),
+      ocrSectionEl(ocr),
+      modelSection('Curvas de entrenamiento', 'stats', 'Evolución por época sobre los datos de validación.',
+        h('div', { className: 'charts' }, detectorCurveCard(det), ocrCurveCard(ocr))),
+      ocrErrorsEl(ocr)));
+  }
+
+  function modelEmptyEl(available, hasCard) {
+    const text = available
+      ? 'El servidor tiene los pesos del modelo pero falta su ficha (model_card.json). Genérala con el último comando.'
+      : hasCard
+        ? 'Hay una ficha guardada, pero faltan los archivos del modelo en el servidor. Vuelve a entrenarlo desde la raíz del proyecto:'
+        : 'Todavía no hay un modelo entrenado. Entrénalo y expórtalo desde la raíz del proyecto, en este orden:';
+    return emptyState({
+      art: 'chart', title: 'Modelo entrenado no disponible', text,
+      action: h('div', { className: 'cmd-block' },
+        h('ol', { className: 'cmd-list' }, TRAIN_CMDS.map((c) => h('li', null, h('code', { text: c })))),
+        h('p', { className: 'xsmall muted', text: 'Mientras tanto, «Subir imagen» usa el motor clásico.' }),
+        h('button', { className: 'btn btn--ghost btn--sm', type: 'button', on: { click: () => loadModel({ force: true }) } }, icon('refresh'), h('span', { text: 'Comprobar de nuevo' }))),
+    });
+  }
+
+  /** Sección con título h2 + descripción (sin tarjeta, para no anidar KPIs en tarjetas). */
+  function modelSection(title, iconName, meta, ...content) {
+    const id = uid('msec');
+    return h('section', { className: 'model-section', attrs: { 'aria-labelledby': id } },
+      h('div', { className: 'model-section__head' },
+        h('h2', { className: 'section-title', id }, icon(iconName), title),
+        meta ? h('p', { className: 'small muted', text: meta }) : null),
+      content);
+  }
+
+  function modelPipelineEl(card) {
+    const det = card.detector || {}, ocr = card.ocr || {};
+    const steps = [
+      { iconName: 'image', title: 'Foto', sub: 'Imagen de entrada (PNG o JPG)' },
+      { iconName: 'target', title: 'Detector YOLO', sub: [det.model, isNum(det.imgsz) ? `${fmt.int(det.imgsz)} px` : null].filter(Boolean).join(' · ') || 'Localiza cada placa', tone: 'det' },
+      { iconName: 'crop', title: 'Recorte', sub: 'Región de cada placa con margen' },
+      { iconName: 'type', title: 'Lector CRNN + CTC', sub: ocr.model ? `${ocr.model} · lee la secuencia` : 'Lee la secuencia de caracteres', tone: 'accent' },
+      { iconName: 'check', title: 'Formato colombiano', sub: 'ABC123 · corrige letras y dígitos', tone: 'ok' },
+    ];
+    const flow = h('ol', { className: 'flow', attrs: { 'aria-label': 'Pasos del modelo entrenado' } },
+      steps.map((st, i) => h('li', { className: 'flow__item' },
+        h('div', { className: `flow__step${st.tone ? ' flow__step--' + st.tone : ''}` },
+          h('span', { className: 'flow__icon' }, icon(st.iconName)),
+          h('span', { className: 'flow__text' },
+            h('span', { className: 'flow__title', text: st.title }),
+            h('span', { className: 'flow__sub', text: st.sub }))),
+        i < steps.length - 1 ? icon('arrow-right', 'flow__arrow') : null)));
+    const meta = [card.version ? `Versión ${card.version}` : null, card.created_at ? `generada el ${fmt.date(card.created_at)}` : null].filter(Boolean).join(' · ');
+    return h('section', { className: 'card model-hero', attrs: { 'aria-label': 'Cómo funciona el modelo entrenado' } },
+      h('div', { className: 'card__head' },
+        h('h2', { className: 'card__title' }, icon('model'), 'Cómo funciona: dos modelos en cadena'),
+        meta ? h('span', { className: 'small muted', text: meta }) : null),
+      h('div', { className: 'card__body model-hero__body' },
+        h('p', { className: 'model-hero__lead' },
+          'Primero un ', h('strong', { text: 'detector YOLO' }), ' localiza cada placa en la foto; después un ',
+          h('strong', { text: 'lector CRNN' }), ' (entrenado con pérdida CTC) lee sus caracteres a partir del recorte. ',
+          'Al final, la lectura se ajusta al formato colombiano ', h('span', { className: 'mono', text: 'ABC123' }), '.'),
+        flow));
+  }
+
+  function statChips(obj, keys = ['train', 'val', 'test']) {
+    const o = obj || {};
+    const total = keys.reduce((a, k) => a + num(o[k]), 0);
+    return h('div', { className: 'stat-chips' },
+      keys.map((k) => h('span', { className: 'stat-chip' }, h('span', { className: 'stat-chip__label', text: SPLIT_LABEL[k] || k }), h('strong', { text: intOr(o[k]) }))),
+      h('span', { className: 'stat-chip stat-chip--total' }, h('span', { className: 'stat-chip__label', text: 'Total' }), h('strong', { text: fmt.int(total) })));
+  }
+
+  const safeUrl = (u) => (typeof u === 'string' && /^https?:\/\//i.test(u.trim()) ? u.trim() : null);
+
+  function datasetCardEl(ds) {
+    const url = safeUrl(ds.url);
+    const name = ds.nombre || 'Dataset sin nombre';
+    return h('section', { className: 'card', attrs: { 'aria-label': 'Datos de entrenamiento' } },
+      h('div', { className: 'card__head' }, h('h2', { className: 'card__title' }, icon('database'), 'Datos')),
+      h('div', { className: 'card__body dataset' },
+        h('dl', { className: 'dataset__facts' },
+          h('div', null, h('dt', { text: 'Dataset de fotos reales' }),
+            h('dd', null, url
+              ? h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', className: 'ext-link' }, name, icon('external'), h('span', { className: 'sr-only', text: ' (se abre en una pestaña nueva)' }))
+              : h('span', { text: name }))),
+          h('div', null, h('dt', { text: 'Licencia' }), h('dd', { text: ds.licencia || '—' }))),
+        h('div', { className: 'dataset__block' },
+          h('h3', { className: 'dataset__title', text: 'Imágenes reales por partición (detector y lector)' }),
+          statChips(ds.imagenes)),
+        ds.nota_etiquetas ? h('div', { className: 'callout callout--warn small', attrs: { role: 'note' } },
+          icon('alert'),
+          h('span', null, h('strong', { text: 'Etiquetas automáticas: ' }), ds.nota_etiquetas)) : null,
+        ds.sinteticas_colombianas ? h('div', { className: 'dataset__block' },
+          h('h3', { className: 'dataset__title', text: 'Placas sintéticas colombianas (lector)' }),
+          h('p', { className: 'xsmall muted', text: 'Generadas por ordenador con el formato colombiano ABC123 para enseñar al lector la tipografía y el formato locales.' }),
+          statChips(ds.sinteticas_colombianas)) : null));
+  }
+
+  function detectorSectionEl(det) {
+    const t = det.test || {}, sp = det.speed_ms_per_image || {};
+    const meta = [
+      det.model, isNum(det.epochs) ? `${fmt.int(det.epochs)} épocas` : null, isNum(det.imgsz) ? `${fmt.int(det.imgsz)} px` : null,
+      isNum(det.train_minutes) ? `${fmt.dec(det.train_minutes)} min de entrenamiento` : null,
+      isNum(t.images) ? `${fmt.int(t.images)} imágenes de prueba` : null,
+    ].filter(Boolean).join(' · ');
+    return modelSection('Detector YOLO · métricas en prueba', 'target', meta,
+      h('div', { className: 'kpis' },
+        kpiEl({ label: 'Precisión', value: pctOr(t.precision), sub: 'Cajas detectadas que sí son placas', iconName: 'check', tone: 'ok', ratio: t.precision }),
+        kpiEl({ label: 'Recall', value: pctOr(t.recall), sub: 'Placas reales que encuentra', iconName: 'search', tone: 'det', ratio: t.recall }),
+        kpiEl({ label: 'mAP@50', value: pctOr(t.map50), sub: 'Precisión media con IoU ≥ 0,5', iconName: 'target', tone: 'accent', ratio: t.map50 }),
+        kpiEl({ label: 'mAP@50-95', value: pctOr(t.map50_95), sub: 'Media con IoU de 0,5 a 0,95 (más exigente)', iconName: 'layers', ratio: t.map50_95 }),
+        kpiEl({ label: 'Inferencia', value: msOr(sp.inference), sub: `Por imagen · preprocesado ${msOr(sp.preprocess)} · posprocesado ${msOr(sp.postprocess)}`, iconName: 'clock' })));
+  }
+
+  function ocrSectionEl(ocr) {
+    const tst = ocr.test || {};
+    const meta = [
+      ocr.model, isNum(ocr.epochs) ? `${fmt.int(ocr.epochs)} épocas` : null,
+      isNum(ocr.train_minutes) ? `${fmt.dec(ocr.train_minutes)} min de entrenamiento` : null,
+    ].filter(Boolean).join(' · ');
+    const groups = OCR_SPLITS.map(({ key, title, sub }) => {
+      const ev = tst[key];
+      if (!ev) return null;
+      return h('div', { className: 'kpi-group' },
+        h('h3', { className: 'kpi-group__title' }, title,
+          h('span', { className: 'badge', text: `${intOr(ev.n)} placas de prueba` })),
+        h('p', { className: 'xsmall muted kpi-group__sub', text: sub }),
+        h('div', { className: 'kpis' },
+          kpiEl({ label: 'Placas exactas', value: pctOr(ev.plate_accuracy), sub: 'Lectura completa sin errores', iconName: 'target', tone: 'accent', ratio: ev.plate_accuracy }),
+          kpiEl({ label: 'Caracteres correctos', value: pctOr(ev.char_accuracy), sub: 'Por posición', iconName: 'type', tone: 'det', ratio: ev.char_accuracy }),
+          kpiEl({ label: 'CER', value: pctOr(ev.cer), sub: 'Tasa de error por carácter (menos es mejor)', iconName: 'alert' }),
+          kpiEl({ label: 'Confianza media', value: pctOr(ev.avg_confidence), sub: 'Del lector en sus predicciones', iconName: 'gauge', ratio: ev.avg_confidence })));
+    });
+    return modelSection('Lector CRNN + CTC · métricas en prueba', 'type', meta,
+      groups,
+      h('div', { className: 'kpis kpis--compact' },
+        kpiEl({ label: 'Parámetros', value: isNum(ocr.params) ? fmt.compact(ocr.params) : '—', sub: isNum(ocr.params) ? `${fmt.int(ocr.params)} pesos entrenables` : null, iconName: 'model' }),
+        kpiEl({ label: 'Mejor época', value: intOr(ocr.best_epoch), sub: isNum(ocr.epochs) ? `de ${fmt.int(ocr.epochs)} (se guardó esta)` : null, iconName: 'check' }),
+        kpiEl({ label: 'Muestras de entrenamiento', value: intOr(ocr.train_samples), sub: 'Recortes de placa usados para entrenar', iconName: 'layers' })));
+  }
+
+  function legendEl(series) {
+    return h('div', { className: 'chart-legend' }, series.map((se) => h('span', null,
+      h('i', { className: se.dash ? 'is-dashed' : '', style: se.dash ? { borderColor: se.color } : { background: se.color } }),
+      se.label + (se.axis === 'right' ? ' (eje derecho)' : ''))));
+  }
+
+  function detectorCurveCard(det) {
+    const hist = Array.isArray(det.history) ? det.history.filter((r) => r && isNum(r.epoch)) : [];
+    if (!hist.length) return chartCard('Detector · validación por época', 'target', emptyState({ art: 'chart', compact: true, title: 'Sin historial de entrenamiento' }));
+    const xs = hist.map((r) => r.epoch);
+    const series = [
+      { label: 'mAP@50', key: 'map50', color: 'var(--series-1)' },
+      { label: 'mAP@50-95', key: 'map50_95', color: 'var(--series-2)' },
+      { label: 'Precisión', key: 'precision', color: 'var(--series-3)' },
+      { label: 'Recall', key: 'recall', color: 'var(--series-4)' },
+    ].map((se) => ({ ...se, values: hist.map((r) => (isNum(r[se.key]) ? r[se.key] : null)), format: fmt.pct }));
+    const last = hist[hist.length - 1];
+    const chart = lineChart({
+      xs, series, yLeft: { max: 1, format: fmt.pct0, title: 'Métrica' }, height: 270,
+      ariaLabel: `Curvas del detector en ${hist.length} épocas. Última época: mAP@50 ${pctOr(last.map50)}, mAP@50-95 ${pctOr(last.map50_95)}, precisión ${pctOr(last.precision)}, recall ${pctOr(last.recall)}`,
+    });
+    return chartCard('Detector · validación por época', 'target',
+      legendEl(series), chart,
+      dataTableDetails('Historial de entrenamiento del detector',
+        ['Época', 'mAP@50', 'mAP@50-95', 'Precisión', 'Recall', 'Pérdida caja (entren.)', 'Pérdida caja (valid.)'],
+        hist.map((r) => [fmt.int(r.epoch), pctOr(r.map50), pctOr(r.map50_95), pctOr(r.precision), pctOr(r.recall),
+          isNum(r.train_box_loss) ? fmt.dec3(r.train_box_loss) : '—', isNum(r.val_box_loss) ? fmt.dec3(r.val_box_loss) : '—'])));
+  }
+
+  function ocrCurveCard(ocr) {
+    const hist = Array.isArray(ocr.history) ? ocr.history.filter((r) => r && isNum(r.epoch)) : [];
+    if (!hist.length) return chartCard('Lector · validación por época', 'type', emptyState({ art: 'chart', compact: true, title: 'Sin historial de entrenamiento' }));
+    const xs = hist.map((r) => r.epoch);
+    const pick = (k) => hist.map((r) => (isNum(r[k]) ? r[k] : null));
+    const series = [
+      { label: 'Placas exactas · fotos reales', color: 'var(--series-1)', values: pick('real_val_plate_accuracy'), format: fmt.pct },
+      { label: 'Placas exactas · sintéticas colombianas', color: 'var(--series-3)', values: pick('synth_val_plate_accuracy'), format: fmt.pct },
+      { label: 'Pérdida CTC (entrenamiento)', color: 'var(--muted)', values: pick('train_loss'), format: fmt.dec3, axis: 'right', dash: true },
+    ];
+    const best = isNum(ocr.best_epoch) ? ocr.best_epoch : null;
+    const bestRow = best !== null ? hist.find((r) => r.epoch === best) : null;
+    const chart = lineChart({
+      xs, series, height: 270,
+      yLeft: { max: 1, format: fmt.pct0, title: 'Placas exactas' },
+      yRight: { format: (v) => fmt.dec(v), title: 'Pérdida' },
+      marker: best !== null ? { x: best, label: `Mejor época (${fmt.int(best)})` } : null,
+      ariaLabel: `Curvas del lector en ${hist.length} épocas${bestRow ? `. Mejor época ${fmt.int(best)}: placas exactas ${pctOr(bestRow.real_val_plate_accuracy)} en fotos reales y ${pctOr(bestRow.synth_val_plate_accuracy)} en sintéticas colombianas` : ''}`,
+    });
+    return chartCard('Lector · validación por época', 'type',
+      legendEl(series), chart,
+      dataTableDetails('Historial de entrenamiento del lector',
+        ['Época', 'Placas (reales)', 'Caracteres (reales)', 'Placas (sintéticas)', 'Caracteres (sintéticas)', 'Pérdida', 'Tiempo'],
+        hist.map((r) => [fmt.int(r.epoch) + (r.epoch === best ? ' ★' : ''), pctOr(r.real_val_plate_accuracy), pctOr(r.real_val_char_accuracy),
+          pctOr(r.synth_val_plate_accuracy), pctOr(r.synth_val_char_accuracy),
+          isNum(r.train_loss) ? fmt.dec3(r.train_loss) : '—', isNum(r.seconds) ? fmt.sec(r.seconds) : '—'])));
+  }
+
+  /** Tarjeta comparativa entrenado vs clásico para una métrica. */
+  function compareTile({ label, iconName, ml, cl, format, lowerBetter = false, max }) {
+    const a = num(ml), b = num(cl);
+    const top = max || Math.max(a, b) || 1;
+    const better = !isNum(ml) || !isNum(cl) || a === b ? null : ((lowerBetter ? a < b : a > b) ? 'ml' : 'clasico');
+    const row = (key, raw) => h('div', { className: `compare-row compare-row--${key}${better === key ? ' is-best' : ''}` },
+      h('span', { className: 'compare-row__name', text: ENGINE_LABEL[key] }),
+      h('span', { className: 'compare-row__track', attrs: { 'aria-hidden': 'true' } },
+        h('span', { className: 'compare-row__fill', style: { width: `${clamp((num(raw) / top) * 100, 0, 100)}%` } })),
+      h('span', { className: 'compare-row__value', text: isNum(raw) ? format(raw) : '—' }),
+      better === key ? h('span', { className: 'sr-only', text: ' (mejor)' }) : null);
+    return h('div', { className: 'compare-tile', attrs: { role: 'group', 'aria-label': label } },
+      h('div', { className: 'compare-tile__label' }, icon(iconName), h('span', { text: label }),
+        lowerBetter ? h('span', { className: 'xsmall muted compare-tile__hint', text: 'menos es mejor' }) : null),
+      row('ml', ml), row('clasico', cl));
+  }
+
+  function engineResultCell(r, expected, engineName) {
+    if (!r) return h('span', { className: 'muted', text: '—' });
+    const leido = typeof r.leido === 'string' ? r.leido : '';
+    return h('div', { className: 'res-cell' },
+      h('div', { className: 'res-cell__main' },
+        r.exacta
+          ? h('span', { className: 'badge badge--ok res-cell__mark', attrs: { title: 'Lectura exacta' } }, icon('check'), h('span', { className: 'sr-only', text: 'Exacta' }))
+          : h('span', { className: 'badge badge--err res-cell__mark', attrs: { title: 'Lectura incorrecta' } }, icon('x'), h('span', { className: 'sr-only', text: 'Incorrecta' })),
+        leido ? diffEl(leido, expected, `Leído por ${engineName}`) : h('span', { className: 'small muted', text: 'Sin detección' })),
+      h('div', { className: 'xsmall muted', text: `${intOr(r.placas)} placa${r.placas === 1 ? '' : 's'} · ${isNum(r.ms) ? fmt.ms0(r.ms) : '—'}` }));
+  }
+
+  function colombiaSectionEl(co) {
+    const sm = co.summary || {};
+    const ml = sm.ml || {}, cl = sm.clasico || {};
+    const rows = Array.isArray(co.per_image) ? co.per_image : [];
+    const n = rows.length || num(ml.images);
+    const mlOk = rows.filter((r) => r && r.ml && r.ml.exacta).length;
+    const clOk = rows.filter((r) => r && r.clasico && r.clasico.exacta).length;
+    const id = uid('co');
+    const lead = rows.length
+      ? h('p', { className: 'highlight-card__lead' },
+        h('strong', { className: 'is-ml', text: `${ENGINE_LABEL.ml}: ${fmt.int(mlOk)} de ${fmt.int(n)}` }), ' placas leídas exactamente · ',
+        h('strong', { text: `${ENGINE_LABEL.clasico}: ${fmt.int(clOk)} de ${fmt.int(n)}` }), '.')
+      : null;
+
+    const tbody = h('tbody', null, rows.length
+      ? rows.map((r) => h('tr', null,
+        h('th', { attrs: { scope: 'row' } }, h('span', { className: 'mono small img-name', text: r.imagen || '—', attrs: { title: r.imagen || '' } })),
+        h('td', null, h('span', { className: 'plate-text', text: r.esperado || '—' })),
+        h('td', null, engineResultCell(r.ml, r.esperado, ENGINE_LABEL.ml)),
+        h('td', null, engineResultCell(r.clasico, r.esperado, ENGINE_LABEL.clasico))))
+      : h('tr', null, h('td', { attrs: { colspan: 4 } }, emptyState({ art: 'plate', compact: true, title: 'Sin resultados por imagen' }))));
+
+    return h('section', { className: 'card highlight-card', attrs: { 'aria-labelledby': id } },
+      h('div', { className: 'card__head' },
+        h('h2', { className: 'card__title highlight-card__title', id }, icon('car'), 'Prueba con fotos colombianas reales'),
+        n ? h('span', { className: 'badge badge--accent', text: `${fmt.int(n)} foto${n === 1 ? '' : 's'}` }) : null),
+      h('div', { className: 'card__body highlight-card__body' },
+        lead,
+        co.nota ? h('p', { className: 'small muted', text: co.nota }) : null,
+        h('div', { className: 'compare-grid' },
+          compareTile({ label: 'Tasa de detección', iconName: 'scan', ml: ml.detection_rate, cl: cl.detection_rate, format: fmt.pct, max: 1 }),
+          compareTile({ label: 'Placas exactas', iconName: 'target', ml: ml.plate_accuracy, cl: cl.plate_accuracy, format: fmt.pct, max: 1 }),
+          compareTile({ label: 'Caracteres correctos', iconName: 'type', ml: ml.char_accuracy, cl: cl.char_accuracy, format: fmt.pct, max: 1 }),
+          compareTile({ label: 'Tiempo medio por foto', iconName: 'clock', ml: ml.avg_ms, cl: cl.avg_ms, format: fmt.ms0, lowerBetter: true })),
+        h('div', { className: 'inner-table table-scroll' },
+          h('table', { className: 'data-table compare-table' },
+            h('caption', { className: 'sr-only', text: 'Resultado por foto colombiana real: placa esperada y lectura de cada motor, con los caracteres erróneos resaltados.' }),
+            h('thead', null, h('tr', null,
+              h('th', { attrs: { scope: 'col' }, text: 'Imagen' }),
+              h('th', { attrs: { scope: 'col' }, text: 'Esperado' }),
+              h('th', { attrs: { scope: 'col' } }, engineBadge('ml', { xs: true })),
+              h('th', { attrs: { scope: 'col' } }, engineBadge('clasico', { xs: true })))),
+            tbody))));
+  }
+
+  function errorsListEl(list) {
+    const items = Array.isArray(list) ? list.filter(Boolean) : [];
+    if (!items.length) return h('p', { className: 'small muted', text: 'No hay ejemplos de errores registrados.' });
+    return h('ul', { className: 'err-list' }, items.map((e) => h('li', { className: 'err-item' },
+      h('span', { className: 'err-item__part' }, h('span', { className: 'xsmall muted', text: 'Esperado' }), h('span', { className: 'plate-text', text: e.esperado || '—' })),
+      icon('arrow-right', 'err-item__arrow'),
+      h('span', { className: 'err-item__part' }, h('span', { className: 'xsmall muted', text: 'Predicho' }),
+        e.predicho ? diffEl(e.predicho, e.esperado, 'Predicho') : h('span', { className: 'small muted', text: '(vacío)' })))));
+  }
+
+  function ocrErrorsEl(ocr) {
+    const tst = ocr.test || {};
+    const cards = OCR_SPLITS.filter(({ key }) => tst[key]).map(({ key, title }) => {
+      const list = tst[key].errores_ejemplo;
+      return h('section', { className: 'card', attrs: { 'aria-label': `Errores del lector: ${title}` } },
+        h('div', { className: 'card__head' },
+          h('h3', { className: 'card__title' }, icon('alert'), title),
+          h('span', { className: 'count-pill', text: String(Array.isArray(list) ? list.length : 0) })),
+        h('div', { className: 'card__body' }, errorsListEl(list)));
+    });
+    if (!cards.length) return null;
+    return modelSection('Ejemplos de errores del lector', 'alert', 'Lecturas equivocadas en prueba; los caracteres distintos al esperado aparecen resaltados.',
+      h('div', { className: 'charts' }, cards));
+  }
+
+  function setupModel() {
+    $('#btn-model-refresh').addEventListener('click', () => loadModel({ force: true }));
+  }
+
+  /* ------------------------------------------------------------------ */
   /* Atajos de teclado                                                    */
   /* ------------------------------------------------------------------ */
   function isTypingTarget(el) {
@@ -1823,7 +2426,7 @@
       const inRadio = e.target && e.target.type === 'radio';
       const inTabs = e.target && e.target.closest && e.target.closest('[role="tablist"]');
       switch (key) {
-        case '1': case '2': case '3': case '4': case '5':
+        case '1': case '2': case '3': case '4': case '5': case '6':
           switchView(VIEWS[+key - 1]); e.preventDefault(); break;
         case 'g': case 'G': e.preventDefault(); generate(); break;
         case 'd': case 'D':
@@ -1860,6 +2463,7 @@
     setupBatch();
     setupHistory();
     setupStats();
+    setupModel();
     setupShortcuts();
     const initial = (location.hash || '').replace(/^#\/?/, '');
     switchView(VIEWS.includes(initial) ? initial : 'detector');
