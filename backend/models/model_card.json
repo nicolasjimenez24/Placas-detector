@@ -447,13 +447,6 @@
     "plate_accuracy": 0.5,
     "char_accuracy": 0.7500000000000001,
     "avg_ms": 407.02717222383296
-   },
-   "clasico": {
-    "images": 18,
-    "detection_rate": 0.5555555555555556,
-    "plate_accuracy": 0.16666666666666666,
-    "char_accuracy": 0.3611111111111111,
-    "avg_ms": 265.7066111100398
    }
   },
   "per_image": [
@@ -465,12 +458,6 @@
      "exacta": false,
      "placas": 1,
      "ms": 679.8
-    },
-    "clasico": {
-     "leido": "KDD042",
-     "exacta": false,
-     "placas": 1,
-     "ms": 806.1
     }
    },
    {
@@ -481,12 +468,6 @@
      "exacta": false,
      "placas": 1,
      "ms": 328.1
-    },
-    "clasico": {
-     "leido": "LAK732",
-     "exacta": false,
-     "placas": 1,
-     "ms": 107.2
     }
    },
    {
@@ -497,12 +478,6 @@
      "exacta": false,
      "placas": 0,
      "ms": 310.6
-    },
-    "clasico": {
-     "leido": "DFT589",
-     "exacta": false,
-     "placas": 1,
-     "ms": 241.9
     }
    },
    {
@@ -513,12 +488,6 @@
      "exacta": true,
      "placas": 2,
      "ms": 331.1
-    },
-    "clasico": {
-     "leido": "RJV247",
-     "exacta": true,
-     "placas": 1,
-     "ms": 109.2
     }
    },
    {
@@ -529,12 +498,6 @@
      "exacta": true,
      "placas": 1,
      "ms": 328.6
-    },
-    "clasico": {
-     "leido": "DFV275",
-     "exacta": true,
-     "placas": 1,
-     "ms": 253.7
     }
    },
    {
@@ -545,12 +508,6 @@
      "exacta": false,
      "placas": 1,
      "ms": 344.3
-    },
-    "clasico": {
-     "leido": "JHV377",
-     "exacta": false,
-     "placas": 1,
-     "ms": 242.7
     }
    },
    {
@@ -561,12 +518,6 @@
      "exacta": true,
      "placas": 2,
      "ms": 406.0
-    },
-    "clasico": {
-     "leido": "",
-     "exacta": false,
-     "placas": 0,
-     "ms": 392.7
     }
    },
    {
@@ -577,12 +528,6 @@
      "exacta": false,
      "placas": 1,
      "ms": 406.7
-    },
-    "clasico": {
-     "leido": "",
-     "exacta": false,
-     "placas": 0,
-     "ms": 422.8
     }
    },
    {
@@ -593,12 +538,6 @@
      "exacta": true,
      "placas": 1,
      "ms": 455.4
-    },
-    "clasico": {
-     "leido": "",
-     "exacta": false,
-     "placas": 0,
-     "ms": 422.5
     }
    },
    {
@@ -609,12 +548,6 @@
      "exacta": true,
      "placas": 1,
      "ms": 375.3
-    },
-    "clasico": {
-     "leido": "",
-     "exacta": false,
-     "placas": 0,
-     "ms": 365.8
     }
    },
    {
@@ -625,12 +558,6 @@
      "exacta": true,
      "placas": 1,
      "ms": 445.4
-    },
-    "clasico": {
-     "leido": "AKD22",
-     "exacta": false,
-     "placas": 1,
-     "ms": 405.0
     }
    },
    {
@@ -641,12 +568,6 @@
      "exacta": false,
      "placas": 1,
      "ms": 363.7
-    },
-    "clasico": {
-     "leido": "",
-     "exacta": false,
-     "placas": 0,
-     "ms": 358.4
     }
    },
    {
@@ -657,12 +578,6 @@
      "exacta": true,
      "placas": 1,
      "ms": 293.8
-    },
-    "clasico": {
-     "leido": "",
-     "exacta": false,
-     "placas": 0,
-     "ms": 61.6
     }
    },
    {
@@ -673,12 +588,6 @@
      "exacta": false,
      "placas": 0,
      "ms": 421.6
-    },
-    "clasico": {
-     "leido": "",
-     "exacta": false,
-     "placas": 0,
-     "ms": 82.3
     }
    },
    {
@@ -689,12 +598,6 @@
      "exacta": false,
      "placas": 2,
      "ms": 517.4
-    },
-    "clasico": {
-     "leido": "",
-     "exacta": false,
-     "placas": 0,
-     "ms": 108.3
     }
    },
    {
@@ -705,12 +608,6 @@
      "exacta": true,
      "placas": 1,
      "ms": 454.2
-    },
-    "clasico": {
-     "leido": "JNU540",
-     "exacta": true,
-     "placas": 1,
-     "ms": 103.4
     }
    },
    {
@@ -721,12 +618,6 @@
      "exacta": true,
      "placas": 1,
      "ms": 478.3
-    },
-    "clasico": {
-     "leido": "75XZ",
-     "exacta": false,
-     "placas": 1,
-     "ms": 160.0
     }
    },
    {
@@ -737,12 +628,6 @@
      "exacta": false,
      "placas": 1,
      "ms": 386.2
-    },
-    "clasico": {
-     "leido": "AU19",
-     "exacta": false,
-     "placas": 1,
-     "ms": 139.2
     }
    }
   ],

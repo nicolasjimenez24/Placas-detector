@@ -1,0 +1,23 @@
+{
+  // Oculta en el explorador los archivos temporales que genera Python
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.pytest_cache": true,
+    "**/*.pyc": true,
+    "**/*.db-shm": true,
+    "**/*.db-wal": true
+  },
+  // Carpetas pesadas que no conviene indexar ni buscar
+  "search.exclude": {
+    "ml/datasets": true,
+    "ml/runs": true,
+    "data": true
+  },
+  "files.watcherExclude": {
+    "**/ml/datasets/**": true,
+    "**/data/**": true
+  },
+  "explorer.compactFolders": false,
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": ["backend/tests"]
+}

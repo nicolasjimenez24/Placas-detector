@@ -1,4 +1,4 @@
-"""API FastAPI de PlacaVision.
+"""API FastAPI de PlacaVision: detección de placas en fotos reales con el modelo entrenado.
 
 Arranque (desde la raíz del proyecto)::
 
@@ -6,52 +6,61 @@ Arranque (desde la raíz del proyecto)::
 """
 from __future__ import annotations
 
-import os
+import json
+import re
+import threading
 import uuid
-from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from pathlib import Path
 
 import cv2
 import numpy as np
-import json
-import threading
-
-from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import detector, ml_inference
-from .generator import DIFFICULTIES, generate_scene
+from . import auth, gallery, ml_inference
+from .results import iou
 from .schemas import (BatchRequest, BatchResponse, DeleteResponse, Detection, DetectRequest,
-                      Health, HistoryResponse, Metrics, ScenesResponse, SimulateRequest,
-                      SimulateResponse)
+                      GalleryResponse, Health, HistoryResponse, Metrics, SetFilter)
 from .storage import PROJECT_ROOT, get_storage
 
-VERSION = "1.0.0"
+VERSION = "2.0.0"
 FRONTEND_DIR = PROJECT_ROOT / "frontend"
 MAX_UPLOAD_BYTES = 15 * 1024 * 1024
 MAX_UPLOAD_SIDE = 2000
 IOU_MATCH = 0.3
-# Pool para lotes: con 4 hilos el tiempo total es igual que con 8 y la latencia por imagen
-# no se infla por contención del GIL (medido: 68 ms vs ~200 ms por imagen).
-_POOL = ThreadPoolExecutor(max_workers=max(2, min(4, (os.cpu_count() or 2))), thread_name_prefix="placas")
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    detector.warmup()  # plantillas OCR en memoria
-    # los modelos entrenados (PyTorch) tardan unos segundos en cargar: se precargan en segundo plano
+    # los modelos (PyTorch) tardan unos segundos en cargar: se precargan en segundo plano
     threading.Thread(target=ml_inference.warmup, daemon=True).start()
     get_storage()
     yield
 
 
 app = FastAPI(title="PlacaVision API", version=VERSION, lifespan=lifespan)
-app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+# Mismo origen (la interfaz la sirve este servidor): no hace falta CORS abierto, y con cookies de sesión
+# sería un riesgo. Solo se permite el propio servidor en desarrollo local.
+app.add_middleware(CORSMiddleware, allow_origins=["http://127.0.0.1:8000", "http://localhost:8000"],
+                   allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+
+@app.middleware("http")
+async def _require_session(request: Request, call_next):
+    """Toda la API (salvo salud y login) exige una sesión iniciada."""
+    if not auth.is_public(request.url.path):
+        user = auth.current_user(request)
+        if user is None:
+            return JSONResponse(status_code=401, content={"detail": "Inicia sesión para usar PlacaVision."})
+        request.state.user = user
+    return await call_next(request)
+
+
+app.include_router(auth.router)
 
 
 @app.exception_handler(RequestValidationError)
@@ -64,7 +73,7 @@ async def _validation_handler(_request: Request, exc: RequestValidationError):
 
 
 # --------------------------------------------------------------------------- #
-# Utilidades
+# Evaluación contra el valor esperado
 # --------------------------------------------------------------------------- #
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
@@ -74,42 +83,69 @@ def _new_id() -> str:
     return uuid.uuid4().hex[:12]
 
 
-def _iou(a, b) -> float:
-    return detector._iou(a, b)
+def norm_text(t: str | None) -> str:
+    return re.sub(r"[^A-Z0-9]", "", (t or "").upper())
 
 
-def _char_accuracy(gt: str, pred: str) -> float:
-    g, p = gt.replace("-", ""), pred.replace("-", "")
-    if not g and not p:
-        return 1.0
-    return sum(1 for x, y in zip(g, p) if x == y) / max(len(g), len(p))
+def levenshtein(a: str, b: str) -> int:
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        cur = [i]
+        for j, cb in enumerate(b, 1):
+            cur.append(min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (ca != cb)))
+        prev = cur
+    return prev[-1]
+
+
+def char_accuracy(gt: str, pred: str) -> float:
+    g, p = norm_text(gt), norm_text(pred)
+    return max(0.0, 1 - levenshtein(p, g) / len(g)) if g else 0.0
+
+
+def match_plates(plates: list[dict], ground_truth: list[dict]) -> list[tuple[int, int]]:
+    """Empareja (índice esperado, índice detectado).
+
+    Las esperadas con caja se emparejan por IoU >= 0.3 (voraz, mayor IoU primero). Las que no
+    tienen caja (fotos colombianas) se emparejan con la detección restante cuya lectura se
+    parezca más a su texto.
+    """
+    used_g, used_p, pairs = set(), set(), []
+    cands = sorted(((iou(g["bbox"], p["bbox"]), gi, pi)
+                    for gi, g in enumerate(ground_truth) if g.get("bbox")
+                    for pi, p in enumerate(plates)), reverse=True)
+    for v, gi, pi in cands:
+        if v < IOU_MATCH:
+            break
+        if gi not in used_g and pi not in used_p:
+            used_g.add(gi), used_p.add(pi), pairs.append((gi, pi))
+    for gi, g in enumerate(ground_truth):
+        if g.get("bbox") or gi in used_g:
+            continue
+        free = [pi for pi in range(len(plates)) if pi not in used_p]
+        if not free:
+            break
+        pi = min(free, key=lambda k: levenshtein(norm_text(plates[k]["text"]), norm_text(g.get("text"))))
+        used_g.add(gi), used_p.add(pi), pairs.append((gi, pi))
+    return pairs
 
 
 def evaluate(plates: list[dict], ground_truth: list[dict]) -> dict:
-    """Empareja predicciones y ground truth (IoU >= 0.3, voraz por IoU descendente)."""
-    pairs = sorted(
-        ((_iou(g["bbox"], p["bbox"]), gi, pi)
-         for gi, g in enumerate(ground_truth) for pi, p in enumerate(plates)),
-        reverse=True,
-    )
-    used_g, used_p, matches = set(), set(), []
-    for iou, gi, pi in pairs:
-        if iou < IOU_MATCH:
-            break
-        if gi in used_g or pi in used_p:
-            continue
-        used_g.add(gi)
-        used_p.add(pi)
-        matches.append((gi, pi))
-    exact = sum(1 for gi, pi in matches if plates[pi]["text"] == ground_truth[gi]["text"])
-    char_sum = sum(_char_accuracy(ground_truth[gi]["text"], plates[pi]["text"]) for gi, pi in matches)
+    pairs = dict(match_plates(plates, ground_truth))
+    readable = [gi for gi, g in enumerate(ground_truth) if g.get("text")]
+    exact, chars = 0, 0.0
+    for gi in readable:
+        if gi in pairs:
+            pred = plates[pairs[gi]]["text"]
+            exact += norm_text(pred) == ground_truth[gi]["text"]
+            chars += char_accuracy(ground_truth[gi]["text"], pred)
     expected = len(ground_truth)
     return {
-        "matched": len(matches),
         "expected": expected,
+        "matched": len(pairs),
+        "readable": len(readable),
         "exact_matches": exact,
-        "char_accuracy": round(char_sum / expected, 4) if expected else (1.0 if not plates else 0.0),
-        "correct": exact == expected and len(plates) == expected,
+        "char_accuracy": round(chars / len(readable), 4) if readable else 0.0,
+        "correct": len(pairs) == expected and exact == len(readable) and len(plates) == len(pairs),
     }
 
 
@@ -117,14 +153,12 @@ def compute_metrics(detections: list[dict]) -> dict:
     def summarize(dets: list[dict]) -> dict:
         evals = [d["evaluation"] for d in dets if d.get("evaluation")]
         expected = sum(e["expected"] for e in evals)
-        exact = sum(e["exact_matches"] for e in evals)
-        matched = sum(e["matched"] for e in evals)
-        char_w = sum(e["char_accuracy"] * e["expected"] for e in evals)
+        readable = sum(e["readable"] for e in evals)
         return {
             "detections": len(dets),
-            "plate_accuracy": round(exact / expected, 4) if expected else 0.0,
-            "char_accuracy": round(char_w / expected, 4) if expected else 0.0,
-            "detection_rate": round(matched / expected, 4) if expected else 0.0,
+            "plate_accuracy": round(sum(e["exact_matches"] for e in evals) / readable, 4) if readable else 0.0,
+            "char_accuracy": round(sum(e["char_accuracy"] * e["readable"] for e in evals) / readable, 4) if readable else 0.0,
+            "detection_rate": round(sum(e["matched"] for e in evals) / expected, 4) if expected else 0.0,
             "avg_processing_ms": round(float(np.mean([d["processing_ms"] for d in dets])), 3) if dets else 0.0,
         }
 
@@ -138,47 +172,22 @@ def compute_metrics(detections: list[dict]) -> dict:
         "detection_rate": overall["detection_rate"],
         "avg_confidence": round(float(np.mean(confs)), 4) if confs else 0.0,
         "avg_processing_ms": overall["avg_processing_ms"],
-        "by_difficulty": {
-            diff: summarize([d for d in detections if d.get("difficulty") == diff]) for diff in DIFFICULTIES
-        },
+        "by_set": {s: summarize([d for d in detections if d.get("photo_set") == s]) for s in gallery.SETS},
     }
 
 
-def _create_scene(seed: int | None, difficulty: str) -> dict:
-    return _create_scene_with_image(seed, difficulty)[0]
-
-
-def _create_scene_with_image(seed: int | None, difficulty: str) -> tuple[dict, np.ndarray]:
-    """Genera y persiste una escena; devuelve también la imagen BGR en memoria."""
-    st = get_storage()
-    gen = generate_scene(seed, difficulty)
-    scene_id = _new_id()
-    filename = f"scene_{scene_id}.png"
-    bgr = cv2.cvtColor(np.asarray(gen.image), cv2.COLOR_RGB2BGR)
-    st.save_image(filename, bgr)
-    scene = {
-        "id": scene_id,
-        "image_url": f"/api/images/{filename}",
-        "width": gen.image.width,
-        "height": gen.image.height,
-        "difficulty": difficulty,
-        "ground_truth": gen.ground_truth,
-        "created_at": _now(),
-    }
-    st.add_scene(scene, filename, gen.seed)
-    return scene, bgr
-
-
-def _check_engine(engine: str) -> None:
-    if engine == "ml" and not ml_inference.available():
+# --------------------------------------------------------------------------- #
+# Detección
+# --------------------------------------------------------------------------- #
+def _require_model() -> None:
+    if not ml_inference.available():
         raise HTTPException(status_code=503, detail="El modelo entrenado no está disponible: entrénalo con los scripts de ml/")
 
 
-def _run_detection(img: np.ndarray, *, source: str, image_filename: str, scene: dict | None,
-                   engine: str = "clasico") -> dict:
+def _run_detection(img: np.ndarray, *, image_url: str, photo: dict | None) -> dict:
     st = get_storage()
     det_id = _new_id()
-    res = ml_inference.detect(img) if engine == "ml" else detector.detect(img)
+    res = ml_inference.detect(img)
     plates = []
     for k, p in enumerate(res.plates):
         crop_name = f"det_{det_id}_plate{k}.png"
@@ -190,22 +199,21 @@ def _run_detection(img: np.ndarray, *, source: str, image_filename: str, scene: 
             "chars": [{"char": c.char, "confidence": float(c.confidence)} for c in p.chars],
             "crop_url": f"/api/images/{crop_name}",
             "valid_format": bool(p.valid_format),
-            "raw_text": getattr(p, "raw_text", None),
-            "detection_confidence": getattr(p, "detection_confidence", None),
+            "raw_text": p.raw_text,
+            "detection_confidence": p.detection_confidence,
         })
     annotated_name = f"det_{det_id}_annotated.png"
     st.save_image(annotated_name, res.annotated)
-    gt = scene["ground_truth"] if scene else None
+    gt = photo["ground_truth"] if photo else None
     det = {
         "id": det_id,
-        "scene_id": scene["id"] if scene else None,
-        "source": source,
-        "engine": engine,
-        "image_url": f"/api/images/{image_filename}",
+        "photo_id": photo["id"] if photo else None,
+        "photo_set": photo["set"] if photo else None,
+        "source": "gallery" if photo else "upload",
+        "image_url": image_url,
         "annotated_url": f"/api/images/{annotated_name}",
         "width": res.width,
         "height": res.height,
-        "difficulty": scene["difficulty"] if scene else None,
         "plates": plates,
         "ground_truth": gt,
         "evaluation": evaluate(plates, gt) if gt is not None else None,
@@ -218,20 +226,11 @@ def _run_detection(img: np.ndarray, *, source: str, image_filename: str, scene: 
     return det
 
 
-def _detect_scene(scene_id: str, engine: str = "clasico") -> dict:
-    st = get_storage()
-    scene = st.get_scene(scene_id)
-    if scene is None:
-        raise HTTPException(status_code=404, detail=f"Escena '{scene_id}' no encontrada")
-    filename = scene.pop("_filename")
-    img = st.load_image(filename)
+def _detect_photo(photo: dict) -> dict:
+    img = cv2.imdecode(np.fromfile(str(gallery.photo_path(photo)), np.uint8), cv2.IMREAD_COLOR)
     if img is None:
-        raise HTTPException(status_code=404, detail=f"Imagen de la escena '{scene_id}' no encontrada")
-    return _run_detection(img, source="simulated", image_filename=filename, scene=scene, engine=engine)
-
-
-def _public_scene(scene: dict) -> dict:
-    return {k: v for k, v in scene.items() if not k.startswith("_")}
+        raise HTTPException(status_code=500, detail=f"No se pudo leer la foto '{photo['id']}'")
+    return _run_detection(img, image_url=gallery.public(photo)["image_url"], photo=photo)
 
 
 # --------------------------------------------------------------------------- #
@@ -239,56 +238,57 @@ def _public_scene(scene: dict) -> dict:
 # --------------------------------------------------------------------------- #
 @app.get("/api/health", response_model=Health)
 def health():
-    return {"status": "ok", "version": VERSION}
+    return {"status": "ok", "version": VERSION, "model_available": ml_inference.available()}
 
 
-@app.post("/api/simulate", response_model=SimulateResponse)
-def simulate(req: SimulateRequest):
-    seeds = [None if req.seed is None else req.seed + i for i in range(req.count)]
-    scenes = list(_POOL.map(lambda sd: _create_scene(sd, req.difficulty), seeds))
-    return {"scenes": scenes}
+@app.get("/api/gallery", response_model=GalleryResponse)
+def list_gallery(set: SetFilter = "all"):  # noqa: A002 - nombre del parámetro en la API
+    return {"photos": [gallery.public(p) for p in gallery.list_photos(set)], "sets": gallery.sets_info()}
+
+
+@app.get("/api/gallery/{photo_id}/image")
+def gallery_image(photo_id: str):
+    photo = gallery.get_photo(photo_id)
+    if photo is None:
+        raise HTTPException(status_code=404, detail=f"Foto '{photo_id}' no encontrada")
+    return FileResponse(gallery.photo_path(photo), media_type="image/jpeg",
+                        headers={"Cache-Control": "public, max-age=86400"})
 
 
 @app.post("/api/detect", response_model=Detection)
-def detect_scene(req: DetectRequest):
-    _check_engine(req.engine)
-    return _detect_scene(req.scene_id, req.engine)
+def detect_photo(req: DetectRequest):
+    _require_model()
+    photo = gallery.get_photo(req.photo_id)
+    if photo is None:
+        raise HTTPException(status_code=404, detail=f"Foto '{req.photo_id}' no encontrada")
+    return _detect_photo(photo)
 
 
 @app.post("/api/detect/upload", response_model=Detection)
-async def detect_upload(file: UploadFile = File(...), engine: str | None = Form(None)):
-    # por defecto, las fotos subidas usan el modelo entrenado si existe
-    engine = engine or ("ml" if ml_inference.available() else "clasico")
-    if engine not in ("clasico", "ml"):
-        raise HTTPException(status_code=422, detail="engine debe ser 'clasico' o 'ml'")
-    _check_engine(engine)
+async def detect_upload(file: UploadFile = File(...)):
+    _require_model()
     data = await file.read(MAX_UPLOAD_BYTES + 1)
     if len(data) > MAX_UPLOAD_BYTES:
         raise HTTPException(status_code=413, detail="El archivo supera el máximo de 15 MB")
-    img = None
-    if data:
-        img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR)
+    img = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR) if data else None
     if img is None or img.size == 0:
-        raise HTTPException(status_code=400, detail="El archivo no es una imagen válida (PNG o JPG)")
+        raise HTTPException(status_code=400, detail="El archivo no es una imagen válida (PNG, JPG o WebP)")
     h, w = img.shape[:2]
     if max(h, w) > MAX_UPLOAD_SIDE:
         f = MAX_UPLOAD_SIDE / max(h, w)
-        img = cv2.resize(img, (int(w * f), int(h * f)), interpolation=cv2.INTER_AREA)
-    st = get_storage()
+        img = cv2.resize(img, (max(1, int(w * f)), max(1, int(h * f))), interpolation=cv2.INTER_AREA)
     filename = f"upload_{_new_id()}.png"
-    st.save_image(filename, img)
-    return _run_detection(img, source="upload", image_filename=filename, scene=None, engine=engine)
+    get_storage().save_image(filename, img)
+    return _run_detection(img, image_url=f"/api/images/{filename}", photo=None)
 
 
 @app.post("/api/detect/batch", response_model=BatchResponse)
 def detect_batch(req: BatchRequest):
-    def one(seed: int | None) -> dict:
-        scene, bgr = _create_scene_with_image(seed, req.difficulty)
-        filename = scene["image_url"].rsplit("/", 1)[-1]
-        return _run_detection(bgr, source="simulated", image_filename=filename, scene=scene)
-
-    seeds = [None if req.seed is None else req.seed + i for i in range(req.count)]
-    results = list(_POOL.map(one, seeds))
+    _require_model()
+    photos = gallery.sample(req.count, req.seed, req.set)
+    if not photos:
+        raise HTTPException(status_code=404, detail="No hay fotos en la galería para ese conjunto")
+    results = [_detect_photo(p) for p in photos]  # el modelo se usa de a una imagen (ver ml_inference)
     return {"results": results, "metrics": compute_metrics(results)}
 
 
@@ -300,9 +300,13 @@ def model_info():
     return {"available": ml_inference.available(), "card": card}
 
 
-@app.get("/api/scenes", response_model=ScenesResponse)
-def list_scenes(limit: int = Query(50, ge=1, le=1000)):
-    return {"scenes": [_public_scene(s) for s in get_storage().list_scenes(limit)]}
+@app.get("/api/report")
+def report():
+    """Evidencia de validación: evaluación sobre toda la galería y resultado de las pruebas automatizadas."""
+    def load(name: str):
+        path = ml_inference.MODELS_DIR / name
+        return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
+    return {"gallery": load("gallery_report.json"), "tests": load("test_report.json")}
 
 
 @app.get("/api/history", response_model=HistoryResponse)

@@ -1,103 +1,81 @@
-# PlacaVision — Detector de Placas Vehiculares (datos simulados)
+# PlacaVision — Arquitectura y contrato de API
 
 ## Objetivo
-Sistema completo que **genera imágenes sintéticas** de vehículos con placas y **detecta y lee**
-cada placa con un pipeline real de visión por computador (OpenCV + OCR por plantillas).
-Todos los datos son simulados (no hay placas reales).
+Identificar placas vehiculares en **fotos reales**: localizar cada placa y leer su texto con un modelo
+entrenado (detector YOLO11n + lector CRNN/CTC), y medir el acierto contra el valor esperado de cada foto.
 
-## Entorno
-- Windows 11, Python 3.12 (`python`), Git Bash disponible.
-- Fuente para placas y plantillas OCR: `C:/Windows/Fonts/arialbd.ttf` (fallback: `consolab.ttf`).
-  Resolver la ruta en un solo sitio (`backend/app/fonts.py`) para que generador y detector usen la misma.
-
-## Fases de trabajo (dirigidas por el Agente Orquestador)
-| Fase | Agente | Entregable |
-|------|--------|-----------|
-| 0 | Orquestador | Arquitectura + contrato de API (este documento) |
-| 1 | Agente Backend | `backend/`: generador sintético, motor de detección, API FastAPI, SQLite, tests |
-| 2 | Agente Frontend | `frontend/`: SPA (HTML/CSS/JS sin build) servida por el backend |
-| 3 | Agente QA | Pruebas end-to-end, revisión de UI, correcciones |
-| 4 | Orquestador | Integración final, README, entrega |
-
-## Estructura
+## Componentes
 ```
-placas-detector/
-  backend/
-    app/
-      main.py          # FastAPI: rutas /api/* y sirve frontend/ en "/"
-      fonts.py         # Resolución de la fuente
-      generator.py     # Generación de escenas sintéticas (Pillow)
-      detector.py      # Pipeline de detección + OCR (OpenCV/numpy)
-      storage.py       # SQLite (historial) + carpeta data/images
-      schemas.py       # Modelos Pydantic v2
-    tests/             # pytest
-    requirements.txt
-  frontend/
-    index.html, styles.css, app.js
-  data/                # generado en ejecución (imágenes, placas.db) — en .gitignore
-  run.bat              # arranque en Windows: uvicorn en puerto 8000
+backend/app/
+  main.py          API FastAPI (/api/*), evaluación y métricas; sirve frontend/ en "/"
+  auth.py          Usuarios, contraseñas (PBKDF2), sesiones por cookie, protección de la API
+  ml_inference.py  Pipeline del modelo: YOLO -> recorte -> CRNN -> formato colombiano
+  ml_models.py     Red CRNN (compartida con ml/train_ocr.py)
+  results.py       Estructuras de resultado, IoU y anotación de imágenes
+  gallery.py       Galería de fotos reales con su valor esperado (backend/gallery/)
+  storage.py       SQLite (historial, usuarios, sesiones) + PNG en data/images
+  schemas.py       Modelos Pydantic del contrato
+backend/models/    Pesos (.pt), model_card.json, gallery_report.json, test_report.json
+backend/gallery/   catalog.json + fotos (dataset/ en git; colombia/ solo local)
+frontend/          index.html + app.js (aplicación), login.html + login.js, styles.css
+ml/                Preparación de datos, entrenamiento, evaluación y armado de la galería
 ```
 
-## Formato de placa simulada
-- Texto `AAA-123` (3 letras + guion + 3 dígitos). Letras: A-Z sin I, O, Q.
-- Placa amarilla (~RGB(250, 204, 21)), borde negro, caracteres negros, texto inferior pequeño con
-  una ciudad ficticia (p. ej. "CIUDAD SIM"). Relación de aspecto ≈ 2.4–3.2 : 1.
-- Escena 960×600 px, fondo de calle/parqueadero simulado, **1 a 3 vehículos** por imagen.
-- Dificultad easy/medium/hard: rotación (0/±3/±6°), escala, brillo/contraste, ruido, desenfoque, sombras.
-- Cada escena guarda su *ground truth* (texto y bbox de cada placa).
+## Datos
+| Conjunto | Fotos | Valor esperado | Licencia |
+|---|---|---|---|
+| `dataset` | 150 (partición de prueba, nunca vista al entrenar) | caja de cada placa + texto (generado por TrOCR; `null` si es ilegible) | CC BY 4.0 |
+| `colombia` | 18 | texto anotado a mano, sin caja (`bbox: null`) | sin licencia: solo uso local, ignorado por git |
 
-## Pipeline de detección (detector.py)
-1. Preprocesado (BGR→HSV).
-2. Segmentación por color amarillo + morfología → contornos candidatos.
-3. Filtros: área, aspecto, rectangularidad → enderezado con minAreaRect.
-4. Binarización y segmentación de caracteres (componentes conectados), ignorando borde y franja de ciudad.
-5. OCR por *template matching* contra glifos renderizados con la misma fuente (plantillas aumentadas, cacheadas).
-6. Validación `AAA-123` con corrección posición-dependiente (0↔D, 8↔B, 5↔S, 2↔Z, 6↔G, 1↔L/T…).
-7. Salida: texto, confianza global y por carácter, bbox, recorte y una imagen anotada.
-Cada etapa reporta su tiempo en ms (`stages`).
+## Pipeline del modelo (`ml_inference.detect`)
+1. **Detección** (`yolo_deteccion`): YOLO11n sobre la foto y sobre la foto en un lienzo 3× mayor
+   (para primeros planos); NMS conjunto.
+2. **Recorte** (`recorte`): cada caja con un margen.
+3. **Lectura** (`crnn_lectura`): CRNN + decodificación CTC voraz, confianza por carácter.
+4. **Formato** (`formato_colombiano`): se busca una subcadena `ABC123`; solo si la lectura tiene
+   6 caracteres se corrigen confusiones letra/dígito (máx. 2). Las placas extranjeras no se deforman.
+   Cajas superpuestas sobre la misma placa: se queda la de mayor confianza.
+5. **Anotación** (`anotacion`). Confianza de la placa = confianza YOLO × confianza media del CRNN.
+
+## Evaluación (`main.evaluate`)
+Emparejamiento: esperadas con caja por IoU ≥ 0,3 (voraz); sin caja, con la detección cuya lectura se
+parezca más (distancia de edición). Se compara el texto normalizado (solo `A-Z0-9`).
+`plate_accuracy` y `char_accuracy` se calculan solo sobre placas con texto conocido;
+`char_accuracy` = 1 − distancia de edición / longitud. `correct` = todas localizadas, todas las legibles
+exactas y sin falsos positivos.
+
+## Autenticación
+- Toda ruta `/api/*` exige sesión, salvo `/api/health` y `/api/auth/{status,login,setup,logout}` → si no, `401`.
+- Primer uso: `POST /api/auth/setup` crea el administrador (solo si no hay usuarios).
+- Contraseñas: PBKDF2-HMAC-SHA256, 240 000 iteraciones, sal aleatoria. Mínimo 8 caracteres con letras y números.
+- Sesión: cookie `pv_session` HttpOnly, SameSite=Lax, 8 h; en la base solo el SHA-256 del token.
+- 5 intentos fallidos seguidos → bloqueo de 60 s (`429`).
+- Más usuarios: `python -m backend.app.auth crear-usuario <usuario> --nombre "..."`.
 
 ## Contrato de API (JSON, prefijo /api)
-- `GET  /api/health` → `{"status":"ok","version":"1.0.0"}`
-- `POST /api/simulate` body `{"count":1..12, "seed": int|null, "difficulty":"easy"|"medium"|"hard"}`
-  → `{"scenes":[Scene]}`
-  - `Scene = {"id": str, "image_url": str, "width": int, "height": int, "difficulty": str,
-     "ground_truth":[{"text": str, "bbox":[x,y,w,h]}], "created_at": iso8601}`
-- `POST /api/detect` body `{"scene_id": str}` → `Detection`
-- `POST /api/detect/upload` multipart `file` (png/jpg) → `Detection` (sin ground truth)
-- `POST /api/detect/batch` body `{"count":1..50, "seed": int|null, "difficulty": str}`
-  → `{"results":[Detection], "metrics": Metrics}`
-- `GET  /api/scenes?limit=50` → `{"scenes":[Scene]}`
-- `GET  /api/history?limit=50` → `{"detections":[Detection]}`
-- `GET  /api/history/{detection_id}` → `Detection`
-- `DELETE /api/history` → `{"deleted": int}` (borra historial y escenas)
-- `GET  /api/stats` → `Metrics` global
-- `GET  /api/images/{filename}` → PNG (originales, anotadas y recortes)
+- `GET  /health` → `{"status":"ok","version":"2.0.0","model_available":bool}`
+- `GET  /auth/status` → `{"setup_required":bool,"user":User|null}` · `POST /auth/setup` `{username,name,password}` ·
+  `POST /auth/login` `{username,password}` → `{"user":User}` · `POST /auth/logout` · `GET /auth/me`
+- `GET  /gallery?set=all|colombia|dataset` → `{"photos":[Photo],"sets":{nombre: SetInfo}}`
+- `GET  /gallery/{photo_id}/image` → JPEG
+- `POST /detect` `{"photo_id": str}` → `Detection` (404 si no existe; 503 sin modelo)
+- `POST /detect/upload` multipart `file` (PNG/JPG/WebP, ≤ 15 MB; > 2000 px se reduce) → `Detection` sin evaluación
+- `POST /detect/batch` `{"count":1..50,"seed":int|null,"set":"all"|"colombia"|"dataset"}` → `{"results":[Detection],"metrics":Metrics}`
+- `GET  /history?limit=1..1000` · `GET /history/{id}` · `DELETE /history` → `{"deleted":int}`
+- `GET  /stats` → `Metrics` · `GET /model` → `{"available":bool,"card":{...}|null}`
+- `GET  /report` → `{"gallery": informe de ml/evaluate_gallery.py | null, "tests": informe de pytest | null}`
+- `GET  /images/{archivo}.png` → recortes, anotadas y subidas
 
 ```
-Detection = {
-  "id": str, "scene_id": str|null, "source": "simulated"|"upload",
-  "image_url": str, "annotated_url": str, "width": int, "height": int,
-  "difficulty": str|null,
-  "plates": [Plate], "ground_truth": [GT] | null,
-  "evaluation": {"matched": int, "expected": int, "exact_matches": int,
-                 "char_accuracy": float, "correct": bool} | null,
-  "processing_ms": float,
-  "stages": [{"name": str, "ms": float}],
-  "created_at": iso8601
-}
-Plate = {"text": str, "confidence": float (0-1), "bbox":[x,y,w,h],
-         "chars":[{"char": str, "confidence": float}], "crop_url": str, "valid_format": bool}
-Metrics = {"total_detections": int, "total_plates": int, "plate_accuracy": float (0-1),
-           "char_accuracy": float, "detection_rate": float, "avg_confidence": float,
-           "avg_processing_ms": float,
-           "by_difficulty": {"easy": DiffMetrics, "medium": DiffMetrics, "hard": DiffMetrics}}
-DiffMetrics = {"detections": int, "plate_accuracy": float, "char_accuracy": float,
-               "detection_rate": float, "avg_processing_ms": float}
+Photo = {"id": str, "set": "colombia"|"dataset", "image_url": str, "width": int, "height": int,
+         "ground_truth": [{"text": str|null, "bbox": [x,y,w,h]|null}]}
+Detection = {"id", "photo_id": str|null, "photo_set": str|null, "source": "gallery"|"upload",
+  "image_url", "annotated_url", "width", "height", "plates": [Plate], "ground_truth": [..]|null,
+  "evaluation": {"expected","matched","readable","exact_matches","char_accuracy","correct"}|null,
+  "processing_ms", "stages": [{"name","ms"}], "created_at"}
+Plate = {"text", "confidence", "bbox", "chars": [{"char","confidence"}], "crop_url",
+         "valid_format", "raw_text", "detection_confidence"}
+Metrics = {"total_detections","total_plates","plate_accuracy","char_accuracy","detection_rate",
+           "avg_confidence","avg_processing_ms","by_set": {"colombia": {...}, "dataset": {...}}}
 ```
-Errores: `{"detail": str}` con código HTTP 4xx/5xx.
-
-## Requisitos no funcionales
-- Arranque con un solo comando (`run.bat`) en http://localhost:8000.
-- Precisión objetivo (placas exactas): ≥ 95 % `easy`, ≥ 90 % `medium`, ≥ 75 % `hard`.
-- Latencia < 500 ms por imagen.
-- Interfaz en **español**, moderna, responsive, modo oscuro, accesible.
+Errores: `{"detail": "texto en español"}`.

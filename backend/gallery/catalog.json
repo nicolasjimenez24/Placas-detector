@@ -1,0 +1,2972 @@
+{
+ "sets": {
+  "colombia": {
+   "nombre": "Placas colombianas (Alefig12/colombian-license-plate-recognizer)",
+   "url": "https://github.com/Alefig12/colombian-license-plate-recognizer",
+   "licencia": "Sin licencia declarada: solo uso local, no se redistribuye",
+   "descripcion": "Fotos reales de carros colombianos con el texto de la placa anotado a mano.",
+   "nota": "Solo se conoce el texto de la placa, no su posición en la foto."
+  },
+  "dataset": {
+   "nombre": "sonnetechnology/license-plate-text-recognition-full",
+   "url": "https://huggingface.co/datasets/sonnetechnology/license-plate-text-recognition-full",
+   "licencia": "CC BY 4.0",
+   "descripcion": "Fotos reales de vehículos (Open Images) de varios países. Partición de prueba: el modelo nunca las vio al entrenar.",
+   "nota": "El texto esperado lo generó otro modelo (TrOCR), no personas: puede tener errores."
+  }
+ },
+ "photos": [
+  {
+   "id": "co_1",
+   "set": "colombia",
+   "file": "colombia/co_1.jpg",
+   "width": 1600,
+   "height": 1200,
+   "ground_truth": [
+    {
+     "text": "KOO042",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_2",
+   "set": "colombia",
+   "file": "colombia/co_2.jpg",
+   "width": 1024,
+   "height": 768,
+   "ground_truth": [
+    {
+     "text": "RKW326",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_3",
+   "set": "colombia",
+   "file": "colombia/co_3.jpg",
+   "width": 1600,
+   "height": 1200,
+   "ground_truth": [
+    {
+     "text": "DFT369",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_4",
+   "set": "colombia",
+   "file": "colombia/co_4.jpg",
+   "width": 1024,
+   "height": 768,
+   "ground_truth": [
+    {
+     "text": "RJV247",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_5",
+   "set": "colombia",
+   "file": "colombia/co_5.jpg",
+   "width": 1600,
+   "height": 1200,
+   "ground_truth": [
+    {
+     "text": "DFV275",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_6",
+   "set": "colombia",
+   "file": "colombia/co_6.jpg",
+   "width": 1600,
+   "height": 1200,
+   "ground_truth": [
+    {
+     "text": "DHV377",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_7",
+   "set": "colombia",
+   "file": "colombia/co_7.jpg",
+   "width": 2592,
+   "height": 1944,
+   "ground_truth": [
+    {
+     "text": "GGU267",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_8",
+   "set": "colombia",
+   "file": "colombia/co_8.jpg",
+   "width": 3264,
+   "height": 2448,
+   "ground_truth": [
+    {
+     "text": "MLB485",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_9",
+   "set": "colombia",
+   "file": "colombia/co_9.jpg",
+   "width": 2592,
+   "height": 1944,
+   "ground_truth": [
+    {
+     "text": "BTN068",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_10",
+   "set": "colombia",
+   "file": "colombia/co_10.jpg",
+   "width": 2592,
+   "height": 1944,
+   "ground_truth": [
+    {
+     "text": "GXL041",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_11",
+   "set": "colombia",
+   "file": "colombia/co_11.jpg",
+   "width": 3264,
+   "height": 2448,
+   "ground_truth": [
+    {
+     "text": "AKD225",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_12",
+   "set": "colombia",
+   "file": "colombia/co_12.jpg",
+   "width": 4608,
+   "height": 3456,
+   "ground_truth": [
+    {
+     "text": "RBE367",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_13",
+   "set": "colombia",
+   "file": "colombia/co_13.jpg",
+   "width": 800,
+   "height": 600,
+   "ground_truth": [
+    {
+     "text": "NAG598",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_14",
+   "set": "colombia",
+   "file": "colombia/co_14.jpg",
+   "width": 730,
+   "height": 680,
+   "ground_truth": [
+    {
+     "text": "LGG261",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_15",
+   "set": "colombia",
+   "file": "colombia/co_15.jpg",
+   "width": 847,
+   "height": 719,
+   "ground_truth": [
+    {
+     "text": "FBU803",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_16",
+   "set": "colombia",
+   "file": "colombia/co_16.jpg",
+   "width": 750,
+   "height": 518,
+   "ground_truth": [
+    {
+     "text": "JNU540",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_17",
+   "set": "colombia",
+   "file": "colombia/co_17.jpg",
+   "width": 1100,
+   "height": 675,
+   "ground_truth": [
+    {
+     "text": "JLY246",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "co_18",
+   "set": "colombia",
+   "file": "colombia/co_18.jpg",
+   "width": 750,
+   "height": 1000,
+   "ground_truth": [
+    {
+     "text": "DQY789",
+     "bbox": null
+    }
+   ]
+  },
+  {
+   "id": "ds_2",
+   "set": "dataset",
+   "file": "dataset/ds_2.jpg",
+   "width": 400,
+   "height": 141,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      121,
+      81,
+      155,
+      35
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_19",
+   "set": "dataset",
+   "file": "dataset/ds_19.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "89789",
+     "bbox": [
+      192,
+      76,
+      93,
+      82
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_29",
+   "set": "dataset",
+   "file": "dataset/ds_29.jpg",
+   "width": 700,
+   "height": 525,
+   "ground_truth": [
+    {
+     "text": "MH591",
+     "bbox": [
+      563,
+      129,
+      122,
+      92
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_36",
+   "set": "dataset",
+   "file": "dataset/ds_36.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A72110",
+     "bbox": [
+      121,
+      118,
+      106,
+      31
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_39",
+   "set": "dataset",
+   "file": "dataset/ds_39.jpg",
+   "width": 512,
+   "height": 288,
+   "ground_truth": [
+    {
+     "text": "41291NG01",
+     "bbox": [
+      194,
+      180,
+      117,
+      27
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_49",
+   "set": "dataset",
+   "file": "dataset/ds_49.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      225,
+      184,
+      84,
+      64
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_51",
+   "set": "dataset",
+   "file": "dataset/ds_51.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "48A05177",
+     "bbox": [
+      251,
+      165,
+      107,
+      37
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_59",
+   "set": "dataset",
+   "file": "dataset/ds_59.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "STTG3084",
+     "bbox": [
+      249,
+      149,
+      60,
+      13
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_68",
+   "set": "dataset",
+   "file": "dataset/ds_68.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "1998",
+     "bbox": [
+      128,
+      144,
+      92,
+      72
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_74",
+   "set": "dataset",
+   "file": "dataset/ds_74.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "30V3993",
+     "bbox": [
+      224,
+      178,
+      105,
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_77",
+   "set": "dataset",
+   "file": "dataset/ds_77.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F22261",
+     "bbox": [
+      236,
+      177,
+      97,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_80",
+   "set": "dataset",
+   "file": "dataset/ds_80.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      176,
+      100,
+      67,
+      57
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_82",
+   "set": "dataset",
+   "file": "dataset/ds_82.jpg",
+   "width": 600,
+   "height": 450,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      200,
+      213,
+      138,
+      98
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_83",
+   "set": "dataset",
+   "file": "dataset/ds_83.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F15585",
+     "bbox": [
+      142,
+      179,
+      102,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_86",
+   "set": "dataset",
+   "file": "dataset/ds_86.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F02568",
+     "bbox": [
+      233,
+      200,
+      104,
+      54
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_89",
+   "set": "dataset",
+   "file": "dataset/ds_89.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F31118",
+     "bbox": [
+      245,
+      99,
+      103,
+      50
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_92",
+   "set": "dataset",
+   "file": "dataset/ds_92.jpg",
+   "width": 1024,
+   "height": 768,
+   "ground_truth": [
+    {
+     "text": "SN05DZX",
+     "bbox": [
+      361,
+      616,
+      87,
+      31
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_97",
+   "set": "dataset",
+   "file": "dataset/ds_97.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "8905",
+     "bbox": [
+      244,
+      228,
+      71,
+      41
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_99",
+   "set": "dataset",
+   "file": "dataset/ds_99.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F76354",
+     "bbox": [
+      219,
+      177,
+      70,
+      17
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_109",
+   "set": "dataset",
+   "file": "dataset/ds_109.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      215,
+      164,
+      97,
+      89
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_112",
+   "set": "dataset",
+   "file": "dataset/ds_112.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "53951",
+     "bbox": [
+      167,
+      151,
+      72,
+      47
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_116",
+   "set": "dataset",
+   "file": "dataset/ds_116.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F06532",
+     "bbox": [
+      122,
+      233,
+      129,
+      37
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_117",
+   "set": "dataset",
+   "file": "dataset/ds_117.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      213,
+      122,
+      40,
+      14
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_122",
+   "set": "dataset",
+   "file": "dataset/ds_122.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      181,
+      154,
+      94,
+      78
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_124",
+   "set": "dataset",
+   "file": "dataset/ds_124.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "60A21418",
+     "bbox": [
+      264,
+      211,
+      95,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_134",
+   "set": "dataset",
+   "file": "dataset/ds_134.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      216,
+      83,
+      48,
+      43
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_142",
+   "set": "dataset",
+   "file": "dataset/ds_142.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G47281",
+     "bbox": [
+      125,
+      135,
+      113,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_156",
+   "set": "dataset",
+   "file": "dataset/ds_156.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      243,
+      65,
+      87,
+      78
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_159",
+   "set": "dataset",
+   "file": "dataset/ds_159.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "86A06642",
+     "bbox": [
+      125,
+      24,
+      88,
+      27
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_160",
+   "set": "dataset",
+   "file": "dataset/ds_160.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "SUB246724",
+     "bbox": [
+      219,
+      168,
+      53,
+      14
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_163",
+   "set": "dataset",
+   "file": "dataset/ds_163.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F15585",
+     "bbox": [
+      293,
+      230,
+      76,
+      23
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_170",
+   "set": "dataset",
+   "file": "dataset/ds_170.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "STA72110",
+     "bbox": [
+      136,
+      126,
+      117,
+      53
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_177",
+   "set": "dataset",
+   "file": "dataset/ds_177.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "SIRSS813",
+     "bbox": [
+      235,
+      233,
+      42,
+      13
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_178",
+   "set": "dataset",
+   "file": "dataset/ds_178.jpg",
+   "width": 999,
+   "height": 648,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      448,
+      316,
+      46,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_196",
+   "set": "dataset",
+   "file": "dataset/ds_196.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A89714",
+     "bbox": [
+      294,
+      229,
+      78,
+      23
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_197",
+   "set": "dataset",
+   "file": "dataset/ds_197.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "39981",
+     "bbox": [
+      190,
+      211,
+      95,
+      87
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_200",
+   "set": "dataset",
+   "file": "dataset/ds_200.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "9959",
+     "bbox": [
+      188,
+      181,
+      90,
+      71
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_205",
+   "set": "dataset",
+   "file": "dataset/ds_205.jpg",
+   "width": 640,
+   "height": 480,
+   "ground_truth": [
+    {
+     "text": "K7190",
+     "bbox": [
+      34,
+      300,
+      43,
+      29
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_213",
+   "set": "dataset",
+   "file": "dataset/ds_213.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A69172",
+     "bbox": [
+      262,
+      196,
+      102,
+      35
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_217",
+   "set": "dataset",
+   "file": "dataset/ds_217.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G31691",
+     "bbox": [
+      218,
+      146,
+      91,
+      27
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_220",
+   "set": "dataset",
+   "file": "dataset/ds_220.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "7999",
+     "bbox": [
+      190,
+      125,
+      94,
+      81
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_229",
+   "set": "dataset",
+   "file": "dataset/ds_229.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "SIR222616",
+     "bbox": [
+      189,
+      93,
+      114,
+      72
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_230",
+   "set": "dataset",
+   "file": "dataset/ds_230.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "30V3993",
+     "bbox": [
+      115,
+      211,
+      107,
+      30
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_236",
+   "set": "dataset",
+   "file": "dataset/ds_236.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "GSTS525",
+     "bbox": [
+      238,
+      139,
+      44,
+      12
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_240",
+   "set": "dataset",
+   "file": "dataset/ds_240.jpg",
+   "width": 660,
+   "height": 440,
+   "ground_truth": [
+    {
+     "text": "1708",
+     "bbox": [
+      355,
+      334,
+      51,
+      52
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_262",
+   "set": "dataset",
+   "file": "dataset/ds_262.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F59881",
+     "bbox": [
+      148,
+      94,
+      128,
+      45
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_273",
+   "set": "dataset",
+   "file": "dataset/ds_273.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      225,
+      148,
+      39,
+      29
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_275",
+   "set": "dataset",
+   "file": "dataset/ds_275.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F44614",
+     "bbox": [
+      175,
+      210,
+      102,
+      27
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_283",
+   "set": "dataset",
+   "file": "dataset/ds_283.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "5898",
+     "bbox": [
+      190,
+      57,
+      87,
+      67
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_284",
+   "set": "dataset",
+   "file": "dataset/ds_284.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F06532",
+     "bbox": [
+      188,
+      228,
+      104,
+      31
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_287",
+   "set": "dataset",
+   "file": "dataset/ds_287.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A69172",
+     "bbox": [
+      222,
+      181,
+      92,
+      26
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_288",
+   "set": "dataset",
+   "file": "dataset/ds_288.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      250,
+      144,
+      93,
+      95
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_299",
+   "set": "dataset",
+   "file": "dataset/ds_299.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "60A35937",
+     "bbox": [
+      205,
+      74,
+      101,
+      60
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_305",
+   "set": "dataset",
+   "file": "dataset/ds_305.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A65474",
+     "bbox": [
+      142,
+      178,
+      98,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_306",
+   "set": "dataset",
+   "file": "dataset/ds_306.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      200,
+      138,
+      59,
+      46
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_314",
+   "set": "dataset",
+   "file": "dataset/ds_314.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F63034",
+     "bbox": [
+      247,
+      216,
+      104,
+      58
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_328",
+   "set": "dataset",
+   "file": "dataset/ds_328.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A01204",
+     "bbox": [
+      242,
+      142,
+      87,
+      31
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_331",
+   "set": "dataset",
+   "file": "dataset/ds_331.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      176,
+      129,
+      53,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_344",
+   "set": "dataset",
+   "file": "dataset/ds_344.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "61A30001",
+     "bbox": [
+      150,
+      78,
+      113,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_346",
+   "set": "dataset",
+   "file": "dataset/ds_346.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      181,
+      165,
+      86,
+      68
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_350",
+   "set": "dataset",
+   "file": "dataset/ds_350.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "QTY690088",
+     "bbox": [
+      246,
+      168,
+      50,
+      14
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_365",
+   "set": "dataset",
+   "file": "dataset/ds_365.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "2297",
+     "bbox": [
+      191,
+      84,
+      91,
+      69
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_367",
+   "set": "dataset",
+   "file": "dataset/ds_367.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F63034",
+     "bbox": [
+      144,
+      4,
+      141,
+      53
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_372",
+   "set": "dataset",
+   "file": "dataset/ds_372.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F07973",
+     "bbox": [
+      128,
+      213,
+      105,
+      37
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_373",
+   "set": "dataset",
+   "file": "dataset/ds_373.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "SR88",
+     "bbox": [
+      246,
+      65,
+      81,
+      78
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_375",
+   "set": "dataset",
+   "file": "dataset/ds_375.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "SIR59000",
+     "bbox": [
+      241,
+      170,
+      105,
+      63
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_379",
+   "set": "dataset",
+   "file": "dataset/ds_379.jpg",
+   "width": 600,
+   "height": 450,
+   "ground_truth": [
+    {
+     "text": "08913",
+     "bbox": [
+      151,
+      131,
+      105,
+      88
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_387",
+   "set": "dataset",
+   "file": "dataset/ds_387.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G31691",
+     "bbox": [
+      225,
+      185,
+      101,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_389",
+   "set": "dataset",
+   "file": "dataset/ds_389.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F61212",
+     "bbox": [
+      145,
+      161,
+      58,
+      14
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_400",
+   "set": "dataset",
+   "file": "dataset/ds_400.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G50553",
+     "bbox": [
+      248,
+      215,
+      102,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_409",
+   "set": "dataset",
+   "file": "dataset/ds_409.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G39466",
+     "bbox": [
+      259,
+      186,
+      90,
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_417",
+   "set": "dataset",
+   "file": "dataset/ds_417.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      187,
+      62,
+      88,
+      78
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_426",
+   "set": "dataset",
+   "file": "dataset/ds_426.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      276,
+      110,
+      46,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_428",
+   "set": "dataset",
+   "file": "dataset/ds_428.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      181,
+      154,
+      55,
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_434",
+   "set": "dataset",
+   "file": "dataset/ds_434.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A16598",
+     "bbox": [
+      176,
+      191,
+      148,
+      45
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_435",
+   "set": "dataset",
+   "file": "dataset/ds_435.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G43947",
+     "bbox": [
+      159,
+      139,
+      112,
+      36
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_445",
+   "set": "dataset",
+   "file": "dataset/ds_445.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F61712",
+     "bbox": [
+      205,
+      106,
+      111,
+      39
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_452",
+   "set": "dataset",
+   "file": "dataset/ds_452.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "GOV3993",
+     "bbox": [
+      226,
+      135,
+      103,
+      68
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_467",
+   "set": "dataset",
+   "file": "dataset/ds_467.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F61712",
+     "bbox": [
+      122,
+      180,
+      97,
+      28
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_470",
+   "set": "dataset",
+   "file": "dataset/ds_470.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "66490",
+     "bbox": [
+      134,
+      67,
+      95,
+      76
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_472",
+   "set": "dataset",
+   "file": "dataset/ds_472.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      167,
+      167,
+      94,
+      76
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_484",
+   "set": "dataset",
+   "file": "dataset/ds_484.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "12875",
+     "bbox": [
+      208,
+      165,
+      49,
+      51
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_485",
+   "set": "dataset",
+   "file": "dataset/ds_485.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A96141",
+     "bbox": [
+      190,
+      244,
+      120,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_491",
+   "set": "dataset",
+   "file": "dataset/ds_491.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F73029",
+     "bbox": [
+      202,
+      105,
+      79,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_497",
+   "set": "dataset",
+   "file": "dataset/ds_497.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G25481",
+     "bbox": [
+      240,
+      222,
+      98,
+      29
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_498",
+   "set": "dataset",
+   "file": "dataset/ds_498.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "606000584",
+     "bbox": [
+      228,
+      130,
+      49,
+      20
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_500",
+   "set": "dataset",
+   "file": "dataset/ds_500.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "61661008",
+     "bbox": [
+      228,
+      184,
+      55,
+      12
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_501",
+   "set": "dataset",
+   "file": "dataset/ds_501.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A01204",
+     "bbox": [
+      194,
+      78,
+      107,
+      48
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_519",
+   "set": "dataset",
+   "file": "dataset/ds_519.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      179,
+      120,
+      97,
+      82
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_524",
+   "set": "dataset",
+   "file": "dataset/ds_524.jpg",
+   "width": 425,
+   "height": 312,
+   "ground_truth": [
+    {
+     "text": "TIP5097",
+     "bbox": [
+      114,
+      215,
+      45,
+      16
+     ]
+    },
+    {
+     "text": null,
+     "bbox": [
+      378,
+      186,
+      21,
+      15
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_525",
+   "set": "dataset",
+   "file": "dataset/ds_525.jpg",
+   "width": 1024,
+   "height": 754,
+   "ground_truth": [
+    {
+     "text": "CSURITI34",
+     "bbox": [
+      352,
+      618,
+      304,
+      35
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_528",
+   "set": "dataset",
+   "file": "dataset/ds_528.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      238,
+      116,
+      38,
+      25
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_538",
+   "set": "dataset",
+   "file": "dataset/ds_538.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "GSTS950",
+     "bbox": [
+      263,
+      209,
+      49,
+      12
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_546",
+   "set": "dataset",
+   "file": "dataset/ds_546.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "GIF22029",
+     "bbox": [
+      204,
+      145,
+      50,
+      10
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_554",
+   "set": "dataset",
+   "file": "dataset/ds_554.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F44614",
+     "bbox": [
+      266,
+      205,
+      85,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_562",
+   "set": "dataset",
+   "file": "dataset/ds_562.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G47340",
+     "bbox": [
+      146,
+      252,
+      114,
+      39
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_565",
+   "set": "dataset",
+   "file": "dataset/ds_565.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      201,
+      57,
+      93,
+      75
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_571",
+   "set": "dataset",
+   "file": "dataset/ds_571.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "82828",
+     "bbox": [
+      180,
+      106,
+      85,
+      72
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_574",
+   "set": "dataset",
+   "file": "dataset/ds_574.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G51008",
+     "bbox": [
+      173,
+      129,
+      115,
+      35
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_577",
+   "set": "dataset",
+   "file": "dataset/ds_577.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      179,
+      140,
+      95,
+      79
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_597",
+   "set": "dataset",
+   "file": "dataset/ds_597.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A55433",
+     "bbox": [
+      169,
+      144,
+      126,
+      40
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_609",
+   "set": "dataset",
+   "file": "dataset/ds_609.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      134,
+      52,
+      85,
+      70
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_615",
+   "set": "dataset",
+   "file": "dataset/ds_615.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "519919",
+     "bbox": [
+      152,
+      120,
+      94,
+      79
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_616",
+   "set": "dataset",
+   "file": "dataset/ds_616.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F22261",
+     "bbox": [
+      216,
+      202,
+      127,
+      34
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_626",
+   "set": "dataset",
+   "file": "dataset/ds_626.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A72444",
+     "bbox": [
+      238,
+      138,
+      98,
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_629",
+   "set": "dataset",
+   "file": "dataset/ds_629.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51651332",
+     "bbox": [
+      241,
+      198,
+      97,
+      50
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_637",
+   "set": "dataset",
+   "file": "dataset/ds_637.jpg",
+   "width": 1000,
+   "height": 665,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      233,
+      419,
+      43,
+      14
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_640",
+   "set": "dataset",
+   "file": "dataset/ds_640.jpg",
+   "width": 400,
+   "height": 225,
+   "ground_truth": [
+    {
+     "text": "CB7RG05",
+     "bbox": [
+      248,
+      47,
+      119,
+      81
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_645",
+   "set": "dataset",
+   "file": "dataset/ds_645.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      159,
+      58,
+      84,
+      67
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_647",
+   "set": "dataset",
+   "file": "dataset/ds_647.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "58070",
+     "bbox": [
+      214,
+      66,
+      64,
+      53
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_666",
+   "set": "dataset",
+   "file": "dataset/ds_666.jpg",
+   "width": 640,
+   "height": 480,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      232,
+      273,
+      21,
+      11
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_672",
+   "set": "dataset",
+   "file": "dataset/ds_672.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G51008",
+     "bbox": [
+      240,
+      175,
+      91,
+      26
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_680",
+   "set": "dataset",
+   "file": "dataset/ds_680.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A85325",
+     "bbox": [
+      225,
+      185,
+      95,
+      31
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_681",
+   "set": "dataset",
+   "file": "dataset/ds_681.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F63034",
+     "bbox": [
+      195,
+      82,
+      134,
+      44
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_683",
+   "set": "dataset",
+   "file": "dataset/ds_683.jpg",
+   "width": 1024,
+   "height": 576,
+   "ground_truth": [
+    {
+     "text": "BE33TA",
+     "bbox": [
+      413,
+      410,
+      124,
+      46
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_684",
+   "set": "dataset",
+   "file": "dataset/ds_684.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      202,
+      88,
+      37,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_696",
+   "set": "dataset",
+   "file": "dataset/ds_696.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F59011",
+     "bbox": [
+      214,
+      201,
+      114,
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_698",
+   "set": "dataset",
+   "file": "dataset/ds_698.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F35613",
+     "bbox": [
+      163,
+      131,
+      113,
+      28
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_718",
+   "set": "dataset",
+   "file": "dataset/ds_718.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A45974",
+     "bbox": [
+      200,
+      137,
+      94,
+      31
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_726",
+   "set": "dataset",
+   "file": "dataset/ds_726.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "8288",
+     "bbox": [
+      243,
+      120,
+      99,
+      87
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_730",
+   "set": "dataset",
+   "file": "dataset/ds_730.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A72110",
+     "bbox": [
+      272,
+      259,
+      85,
+      24
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_742",
+   "set": "dataset",
+   "file": "dataset/ds_742.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      202,
+      162,
+      99,
+      83
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_743",
+   "set": "dataset",
+   "file": "dataset/ds_743.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "1855",
+     "bbox": [
+      152,
+      92,
+      61,
+      39
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_749",
+   "set": "dataset",
+   "file": "dataset/ds_749.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      236,
+      150,
+      42,
+      13
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_750",
+   "set": "dataset",
+   "file": "dataset/ds_750.jpg",
+   "width": 580,
+   "height": 396,
+   "ground_truth": [
+    {
+     "text": "XP4160",
+     "bbox": [
+      301,
+      239,
+      59,
+      21
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_753",
+   "set": "dataset",
+   "file": "dataset/ds_753.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A69172",
+     "bbox": [
+      201,
+      161,
+      108,
+      31
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_755",
+   "set": "dataset",
+   "file": "dataset/ds_755.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G43630",
+     "bbox": [
+      269,
+      267,
+      79,
+      18
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_767",
+   "set": "dataset",
+   "file": "dataset/ds_767.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A72444",
+     "bbox": [
+      262,
+      249,
+      120,
+      39
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_771",
+   "set": "dataset",
+   "file": "dataset/ds_771.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "3959",
+     "bbox": [
+      159,
+      162,
+      88,
+      72
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_773",
+   "set": "dataset",
+   "file": "dataset/ds_773.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A89714",
+     "bbox": [
+      234,
+      177,
+      104,
+      54
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_774",
+   "set": "dataset",
+   "file": "dataset/ds_774.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "60A35981",
+     "bbox": [
+      193,
+      81,
+      97,
+      34
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_776",
+   "set": "dataset",
+   "file": "dataset/ds_776.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51051332",
+     "bbox": [
+      203,
+      139,
+      111,
+      43
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_780",
+   "set": "dataset",
+   "file": "dataset/ds_780.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51F59011",
+     "bbox": [
+      157,
+      148,
+      146,
+      42
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_782",
+   "set": "dataset",
+   "file": "dataset/ds_782.jpg",
+   "width": 1024,
+   "height": 748,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      42,
+      380,
+      31,
+      38
+     ]
+    },
+    {
+     "text": null,
+     "bbox": [
+      653,
+      286,
+      19,
+      6
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_784",
+   "set": "dataset",
+   "file": "dataset/ds_784.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A16598",
+     "bbox": [
+      147,
+      122,
+      120,
+      35
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_786",
+   "set": "dataset",
+   "file": "dataset/ds_786.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "61A22959",
+     "bbox": [
+      163,
+      123,
+      118,
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_788",
+   "set": "dataset",
+   "file": "dataset/ds_788.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "259518",
+     "bbox": [
+      187,
+      142,
+      85,
+      75
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_791",
+   "set": "dataset",
+   "file": "dataset/ds_791.jpg",
+   "width": 400,
+   "height": 307,
+   "ground_truth": [
+    {
+     "text": "S32H",
+     "bbox": [
+      162,
+      139,
+      108,
+      33
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_793",
+   "set": "dataset",
+   "file": "dataset/ds_793.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51A77529",
+     "bbox": [
+      184,
+      159,
+      113,
+      39
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_796",
+   "set": "dataset",
+   "file": "dataset/ds_796.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "SOLD06410",
+     "bbox": [
+      297,
+      217,
+      84,
+      42
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_797",
+   "set": "dataset",
+   "file": "dataset/ds_797.jpg",
+   "width": 620,
+   "height": 349,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      561,
+      145,
+      34,
+      44
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_804",
+   "set": "dataset",
+   "file": "dataset/ds_804.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51G34471",
+     "bbox": [
+      168,
+      35,
+      110,
+      34
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_809",
+   "set": "dataset",
+   "file": "dataset/ds_809.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "62A05516",
+     "bbox": [
+      178,
+      88,
+      100,
+      30
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_815",
+   "set": "dataset",
+   "file": "dataset/ds_815.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "36678",
+     "bbox": [
+      138,
+      102,
+      49,
+      34
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_816",
+   "set": "dataset",
+   "file": "dataset/ds_816.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": null,
+     "bbox": [
+      166,
+      110,
+      67,
+      49
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_829",
+   "set": "dataset",
+   "file": "dataset/ds_829.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "SOLD04411",
+     "bbox": [
+      219,
+      227,
+      108,
+      32
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_833",
+   "set": "dataset",
+   "file": "dataset/ds_833.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "29A23950",
+     "bbox": [
+      104,
+      174,
+      112,
+      39
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_834",
+   "set": "dataset",
+   "file": "dataset/ds_834.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "51051332",
+     "bbox": [
+      347,
+      251,
+      106,
+      29
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_862",
+   "set": "dataset",
+   "file": "dataset/ds_862.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "43A18650",
+     "bbox": [
+      282,
+      248,
+      82,
+      28
+     ]
+    }
+   ]
+  },
+  {
+   "id": "ds_874",
+   "set": "dataset",
+   "file": "dataset/ds_874.jpg",
+   "width": 472,
+   "height": 303,
+   "ground_truth": [
+    {
+     "text": "61A30001",
+     "bbox": [
+      156,
+      10,
+      127,
+      52
+     ]
+    }
+   ]
+  }
+ ]
+}

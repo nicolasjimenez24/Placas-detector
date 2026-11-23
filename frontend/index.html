@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>PlacaVision · Detector de placas</title>
-  <meta name="description" content="Consola de detección y lectura de placas vehiculares: escenas simuladas y fotos reales de placas colombianas con un modelo entrenado.">
+  <meta name="description" content="Consola de detección y lectura de placas vehiculares en fotos reales con un modelo entrenado (YOLO + CRNN).">
   <meta name="color-scheme" content="dark light">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='8' width='28' height='16' rx='3' fill='%23FACC15' stroke='%23111' stroke-width='2'/%3E%3Crect x='7' y='13' width='18' height='4' rx='1' fill='%23111'/%3E%3C/svg%3E">
   <script>
@@ -15,6 +15,8 @@
       } catch (e) { /* sin localStorage */ }
     })();
   </script>
+  <style>html.auth-pending body { visibility: hidden; }</style>
+  <script>document.documentElement.classList.add('auth-pending');</script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -54,6 +56,15 @@
       <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
       <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="2.8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 5.5v13c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8v-13M4 12c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+      <symbol id="i-camera" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18" stroke="currentColor" stroke-width="1.5"/></symbol>
+      <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 9.5V20h5v-5.5h3V20h5V9.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-beaker" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7 15h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
     </defs>
   </svg>
 
@@ -75,15 +86,22 @@
       </div>
     </div>
 
-    <div class="sim-banner" role="note">
-      <svg class="icon" aria-hidden="true"><use href="#i-flask"/></svg>
-      <span><strong>Escenas simuladas</strong> · la subida admite fotos reales de placas colombianas.</span>
+    <div class="sim-banner sim-banner--real" role="note">
+      <svg class="icon" aria-hidden="true"><use href="#i-camera"/></svg>
+      <span><strong>Fotos reales</strong> · dataset público (CC BY 4.0) y placas colombianas.</span>
     </div>
 
     <div class="topbar__actions">
       <div class="health" id="health" role="status" aria-live="polite" data-state="checking">
         <span class="health__dot" aria-hidden="true"></span>
         <span class="health__label">Comprobando backend…</span>
+      </div>
+      <div class="user-menu" id="user-menu" hidden>
+        <span class="user-menu__avatar" id="user-avatar" aria-hidden="true"></span>
+        <span class="user-menu__text"><span class="user-menu__name" id="user-name"></span><span class="user-menu__role" id="user-role"></span></span>
+        <button class="icon-btn icon-btn--sm" id="btn-logout" type="button" aria-label="Cerrar sesión" title="Cerrar sesión">
+          <svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>
+        </button>
       </div>
       <button class="icon-btn" id="btn-help" type="button" aria-label="Atajos de teclado y ayuda (tecla ?)" title="Atajos de teclado (?)">
         <svg class="icon" aria-hidden="true"><use href="#i-keyboard"/></svg>
@@ -98,79 +116,70 @@
   <div class="layout">
     <nav class="sidenav" aria-label="Secciones">
       <ul class="sidenav__list" role="tablist" aria-orientation="vertical">
-        <li><button class="nav-item" type="button" role="tab" id="tab-detector" aria-controls="view-detector" data-view="detector" aria-selected="true">
-          <svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg><span>Detector</span><kbd>1</kbd></button></li>
+        <li><button class="nav-item" type="button" role="tab" id="tab-inicio" aria-controls="view-inicio" data-view="inicio" aria-selected="true">
+          <svg class="icon" aria-hidden="true"><use href="#i-home"/></svg><span>Inicio</span><kbd>1</kbd></button></li>
+        <li><button class="nav-item" type="button" role="tab" id="tab-detector" aria-controls="view-detector" data-view="detector" aria-selected="false" tabindex="-1">
+          <svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg><span>Detector</span><kbd>2</kbd></button></li>
         <li><button class="nav-item" type="button" role="tab" id="tab-upload" aria-controls="view-upload" data-view="upload" aria-selected="false" tabindex="-1">
-          <svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span>Subir imagen</span><kbd>2</kbd></button></li>
+          <svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg><span>Subir imagen</span><kbd>3</kbd></button></li>
         <li><button class="nav-item" type="button" role="tab" id="tab-batch" aria-controls="view-batch" data-view="batch" aria-selected="false" tabindex="-1">
-          <svg class="icon" aria-hidden="true"><use href="#i-batch"/></svg><span>Evaluación por lotes</span><kbd>3</kbd></button></li>
+          <svg class="icon" aria-hidden="true"><use href="#i-batch"/></svg><span>Evaluación por lotes</span><kbd>4</kbd></button></li>
         <li><button class="nav-item" type="button" role="tab" id="tab-history" aria-controls="view-history" data-view="history" aria-selected="false" tabindex="-1">
-          <svg class="icon" aria-hidden="true"><use href="#i-history"/></svg><span>Historial</span><kbd>4</kbd></button></li>
+          <svg class="icon" aria-hidden="true"><use href="#i-history"/></svg><span>Historial</span><kbd>5</kbd></button></li>
         <li><button class="nav-item" type="button" role="tab" id="tab-stats" aria-controls="view-stats" data-view="stats" aria-selected="false" tabindex="-1">
-          <svg class="icon" aria-hidden="true"><use href="#i-stats"/></svg><span>Estadísticas</span><kbd>5</kbd></button></li>
+          <svg class="icon" aria-hidden="true"><use href="#i-stats"/></svg><span>Estadísticas</span><kbd>6</kbd></button></li>
         <li><button class="nav-item" type="button" role="tab" id="tab-model" aria-controls="view-model" data-view="model" aria-selected="false" tabindex="-1">
-          <svg class="icon" aria-hidden="true"><use href="#i-model"/></svg><span>Modelo</span><kbd>6</kbd></button></li>
+          <svg class="icon" aria-hidden="true"><use href="#i-model"/></svg><span>Modelo</span><kbd>7</kbd></button></li>
+        <li><button class="nav-item" type="button" role="tab" id="tab-tests" aria-controls="view-tests" data-view="tests" aria-selected="false" tabindex="-1">
+          <svg class="icon" aria-hidden="true"><use href="#i-beaker"/></svg><span>Pruebas y validación</span><kbd>8</kbd></button></li>
       </ul>
       <div class="sidenav__foot">
         <p class="muted small"><strong>Modelo entrenado:</strong> YOLO → recorte → CRNN + CTC → formato <span class="mono">ABC123</span>.</p>
-        <p class="muted small sidenav__foot-2"><strong>Clásico:</strong> HSV → color amarillo → contornos → OCR por plantillas → <span class="mono">AAA-123</span>.</p>
       </div>
     </nav>
 
     <main id="main" class="main" tabindex="-1">
 
+      <!-- ============ 0. INICIO ============ -->
+      <section class="view" id="view-inicio" role="tabpanel" aria-labelledby="tab-inicio">
+        <div id="inicio-content"></div>
+      </section>
+
       <!-- ============ 1. DETECTOR ============ -->
-      <section class="view" id="view-detector" role="tabpanel" aria-labelledby="tab-detector">
+      <section class="view" id="view-detector" role="tabpanel" aria-labelledby="tab-detector" hidden>
         <header class="view__head">
           <div>
             <h1 class="view__title">Panel de detección</h1>
-            <p class="view__subtitle">Genera escenas sintéticas de tráfico y ejecuta el pipeline de detección y OCR sobre cada una.</p>
+            <p class="view__subtitle">Elige una <strong>foto real</strong> de la galería y el modelo entrenado localiza y lee sus placas. Cada foto trae su valor esperado, así que se comprueba si la lectura es correcta.</p>
           </div>
         </header>
 
-        <form class="card controls" id="sim-form" novalidate aria-label="Generar escenas simuladas">
-          <div class="field">
-            <label for="sim-count">Cantidad de escenas</label>
-            <div class="stepper">
-              <input type="range" id="sim-count-range" min="1" max="12" value="6" aria-label="Cantidad de escenas (deslizador)" tabindex="-1">
-              <input type="number" id="sim-count" name="count" min="1" max="12" value="6" inputmode="numeric" required>
-            </div>
-          </div>
+        <form class="card controls" id="gallery-form" novalidate aria-label="Filtrar la galería de fotos reales">
           <fieldset class="field">
-            <legend>Dificultad</legend>
+            <legend>Conjunto de fotos</legend>
             <div class="segmented" role="radiogroup">
-              <label><input type="radio" name="difficulty" value="easy"><span>Fácil</span></label>
-              <label><input type="radio" name="difficulty" value="medium" checked><span>Media</span></label>
-              <label><input type="radio" name="difficulty" value="hard"><span>Difícil</span></label>
+              <label><input type="radio" name="set" value="all" checked><span>Todas</span></label>
+              <label><input type="radio" name="set" value="colombia"><span>Colombianas</span></label>
+              <label><input type="radio" name="set" value="dataset"><span>Dataset público</span></label>
             </div>
           </fieldset>
-          <div class="field">
-            <label for="sim-seed">Semilla <span class="muted">(opcional)</span></label>
-            <input type="number" id="sim-seed" name="seed" placeholder="Aleatoria" inputmode="numeric" step="1">
-          </div>
+          <p class="small muted gallery-set-info" id="gallery-set-info" aria-live="polite"></p>
           <div class="controls__actions">
-            <button class="btn btn--primary" type="submit" id="btn-generate">
-              <svg class="icon" aria-hidden="true"><use href="#i-sparkles"/></svg><span>Generar escenas</span><kbd>G</kbd>
-            </button>
-            <button class="btn btn--secondary" type="button" id="btn-detect-all" disabled>
-              <svg class="icon" aria-hidden="true"><use href="#i-play"/></svg><span>Detectar todas</span><kbd>A</kbd>
+            <button class="btn btn--primary" type="button" id="btn-random">
+              <svg class="icon" aria-hidden="true"><use href="#i-sparkles"/></svg><span>Foto al azar</span><kbd>G</kbd>
             </button>
           </div>
         </form>
 
         <div class="gallery-wrap">
           <div class="gallery-head">
-            <h2 class="section-title">Escenas <span class="count-pill" id="scene-count">0</span></h2>
-            <div class="gallery-progress" id="detect-all-progress" hidden>
-              <div class="progress"><div class="progress__bar" id="detect-all-bar"></div></div>
-              <span class="small muted" id="detect-all-label"></span>
-            </div>
+            <h2 class="section-title">Fotos reales <span class="count-pill" id="photo-count">0</span></h2>
             <div class="gallery-nav">
-              <button class="icon-btn icon-btn--sm" type="button" id="btn-prev-scene" aria-label="Escena anterior (flecha izquierda)" disabled><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
-              <button class="icon-btn icon-btn--sm" type="button" id="btn-next-scene" aria-label="Escena siguiente (flecha derecha)" disabled><svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
+              <button class="icon-btn icon-btn--sm" type="button" id="btn-prev-photo" aria-label="Foto anterior (flecha izquierda)" disabled><svg class="icon" aria-hidden="true"><use href="#i-chevron-left"/></svg></button>
+              <button class="icon-btn icon-btn--sm" type="button" id="btn-next-photo" aria-label="Foto siguiente (flecha derecha)" disabled><svg class="icon" aria-hidden="true"><use href="#i-chevron-right"/></svg></button>
             </div>
           </div>
-          <div class="gallery" id="gallery" role="listbox" aria-label="Escenas generadas" aria-orientation="horizontal"></div>
+          <div class="gallery" id="gallery" role="listbox" aria-label="Galería de fotos reales" aria-orientation="horizontal"></div>
         </div>
 
         <div id="detector-viewer" class="viewer-host"></div>
@@ -180,33 +189,22 @@
       <section class="view" id="view-upload" role="tabpanel" aria-labelledby="tab-upload" hidden>
         <header class="view__head">
           <div>
-            <h1 class="view__title">Subir imagen</h1>
-            <p class="view__subtitle">Sube una <strong>foto real</strong> de un vehículo con placa colombiana (formato <span class="mono">ABC123</span>) o una escena simulada, en PNG o JPG. Las imágenes subidas no tienen <em>ground truth</em>, así que no se evalúa la precisión.</p>
+            <h1 class="view__title">Subir imagen y escáner</h1>
+            <p class="view__subtitle">Sube una <strong>foto real</strong> o captura directamente desde la <strong>cámara</strong> un vehículo con placa colombiana (formato <span class="mono">ABC123</span>). Admite PNG, JPG y WebP.</p>
+          </div>
+          <div class="segmented" id="upload-mode-segmented" role="radiogroup" aria-label="Modo de entrada de imagen">
+            <label><input type="radio" name="upload-source-mode" id="mode-src-file" value="file" checked><span><svg class="icon" aria-hidden="true"><use href="#i-upload"/></svg> Subir archivo</span></label>
+            <label><input type="radio" name="upload-source-mode" id="mode-src-camera" value="camera"><span><svg class="icon" aria-hidden="true"><use href="#i-camera"/></svg> Cámara en vivo</span></label>
           </div>
         </header>
 
         <div class="upload-grid">
-          <div class="card engine-picker" role="group" aria-labelledby="engine-title">
-            <div class="engine-picker__row">
-              <h2 class="card__title" id="engine-title"><svg class="icon" aria-hidden="true"><use href="#i-model"/></svg>Motor de detección</h2>
-              <div class="segmented segmented--wrap" role="radiogroup" aria-labelledby="engine-title" aria-describedby="engine-hint">
-                <label id="engine-ml-label"><input type="radio" name="engine" id="engine-ml" value="ml" checked><span>Modelo entrenado (fotos reales)</span></label>
-                <label><input type="radio" name="engine" id="engine-clasico" value="clasico"><span>Clásico (simulación)</span></label>
-              </div>
-            </div>
-            <p class="small muted engine-picker__hint" id="engine-hint" aria-live="polite">Detector YOLO y lector CRNN entrenados con fotos reales: lee placas colombianas reales.</p>
-            <div class="callout callout--warn small" id="engine-note" role="note" hidden>
-              <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
-              <span>El modelo entrenado no está disponible en el servidor, así que se usará el motor clásico.
-                <button class="link-btn" type="button" id="engine-note-link">Ver cómo entrenarlo</button></span>
-            </div>
-          </div>
           <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-describedby="dropzone-hint" aria-label="Zona para soltar o seleccionar una imagen">
-            <input type="file" id="file-input" accept="image/png,image/jpeg,.png,.jpg,.jpeg" class="sr-only" tabindex="-1" aria-hidden="true">
+            <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" class="sr-only" tabindex="-1" aria-hidden="true">
             <div class="dropzone__empty" id="dropzone-empty">
               <div class="dropzone__icon" aria-hidden="true"><svg class="icon icon--xl"><use href="#i-upload"/></svg></div>
               <p class="dropzone__title">Arrastra una imagen aquí</p>
-              <p class="muted" id="dropzone-hint">o <span class="link-like">selecciona un archivo</span> · foto real o escena simulada · PNG o JPG, máx. 10 MB</p>
+              <p class="muted" id="dropzone-hint">o <span class="link-like">selecciona un archivo</span> · foto real · PNG, JPG o WebP, máx. 15 MB</p>
             </div>
             <div class="dropzone__preview" id="dropzone-preview" hidden>
               <img id="upload-preview" alt="Previsualización de la imagen seleccionada">
@@ -216,7 +214,32 @@
               </div>
             </div>
           </div>
-          <div class="upload-actions">
+
+          <div class="camera-card" id="camera-card" hidden>
+            <div class="camera-viewport">
+              <video id="camera-stream" playsinline autoplay muted></video>
+              <canvas id="camera-canvas" hidden></canvas>
+              <div class="viewfinder" aria-hidden="true">
+                <div class="viewfinder__target">
+                  <div class="viewfinder__reticle"></div>
+                </div>
+                <div class="viewfinder__hint">Alinee la placa en el recuadro</div>
+              </div>
+            </div>
+            <div class="camera-bar">
+              <button class="btn btn--primary" type="button" id="btn-camera-capture">
+                <svg class="icon" aria-hidden="true"><use href="#i-camera"/></svg><span>Capturar y detectar</span>
+              </button>
+              <button class="btn btn--ghost" type="button" id="btn-camera-switch" title="Cambiar cámara">
+                <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg><span>Cambiar cámara</span>
+              </button>
+              <button class="btn btn--ghost" type="button" id="btn-camera-stop" title="Detener cámara">
+                <svg class="icon" aria-hidden="true"><use href="#i-x"/></svg><span>Detener cámara</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="upload-actions" id="file-upload-actions">
             <button class="btn btn--primary" type="button" id="btn-upload-detect" disabled>
               <svg class="icon" aria-hidden="true"><use href="#i-scan"/></svg><span>Detectar placas</span><kbd>D</kbd>
             </button>
@@ -234,24 +257,24 @@
         <header class="view__head">
           <div>
             <h1 class="view__title">Evaluación por lotes</h1>
-            <p class="view__subtitle">Genera N escenas y mide el rendimiento del detector contra el <em>ground truth</em>.</p>
+            <p class="view__subtitle">Toma N fotos reales al azar de la galería y mide cuántas placas localiza y lee bien el modelo, comparando con el valor esperado de cada foto.</p>
           </div>
         </header>
 
         <form class="card controls" id="batch-form" novalidate aria-label="Configurar evaluación por lotes">
           <div class="field">
-            <label for="batch-count">Número de escenas</label>
+            <label for="batch-count">Número de fotos</label>
             <div class="stepper">
-              <input type="range" id="batch-count-range" min="1" max="50" value="20" aria-label="Número de escenas (deslizador)" tabindex="-1">
+              <input type="range" id="batch-count-range" min="1" max="50" value="20" aria-label="Número de fotos (deslizador)" tabindex="-1">
               <input type="number" id="batch-count" name="count" min="1" max="50" value="20" inputmode="numeric" required>
             </div>
           </div>
           <fieldset class="field">
-            <legend>Dificultad</legend>
+            <legend>Conjunto de fotos</legend>
             <div class="segmented" role="radiogroup">
-              <label><input type="radio" name="difficulty" value="easy"><span>Fácil</span></label>
-              <label><input type="radio" name="difficulty" value="medium" checked><span>Media</span></label>
-              <label><input type="radio" name="difficulty" value="hard"><span>Difícil</span></label>
+              <label><input type="radio" name="set" value="all" checked><span>Todas</span></label>
+              <label><input type="radio" name="set" value="colombia"><span>Colombianas</span></label>
+              <label><input type="radio" name="set" value="dataset"><span>Dataset público</span></label>
             </div>
           </fieldset>
           <div class="field">
@@ -281,6 +304,9 @@
             <p class="view__subtitle">Detecciones realizadas recientemente. Selecciona una fila para ver el detalle.</p>
           </div>
           <div class="view__head-actions">
+            <button class="btn btn--ghost" type="button" id="btn-history-export">
+              <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span>Exportar CSV</span>
+            </button>
             <button class="btn btn--ghost" type="button" id="btn-history-refresh">
               <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg><span>Actualizar</span>
             </button>
@@ -302,16 +328,17 @@
             <label for="history-source">Origen</label>
             <select id="history-source">
               <option value="all">Todos</option>
-              <option value="simulated">Simulada</option>
+              <option value="gallery">Galería</option>
               <option value="upload">Subida</option>
             </select>
           </div>
           <div class="field">
-            <label for="history-engine">Motor</label>
-            <select id="history-engine">
+            <label for="history-set">Conjunto</label>
+            <select id="history-set">
               <option value="all">Todos</option>
-              <option value="ml">Modelo entrenado</option>
-              <option value="clasico">Clásico</option>
+              <option value="colombia">Colombianas</option>
+              <option value="dataset">Dataset público</option>
+              <option value="none">Subidas (sin conjunto)</option>
             </select>
           </div>
           <div class="field">
@@ -350,7 +377,7 @@
         <header class="view__head">
           <div>
             <h1 class="view__title">Modelo entrenado</h1>
-            <p class="view__subtitle">Ficha del detector YOLO y del lector CRNN entrenados con fotos reales: datos usados, métricas en prueba, curvas de entrenamiento y comparación con el motor clásico.</p>
+            <p class="view__subtitle">Ficha del detector YOLO y del lector CRNN entrenados con fotos reales: datos usados, métricas en prueba y curvas de entrenamiento.</p>
           </div>
           <div class="view__head-actions">
             <button class="btn btn--ghost" type="button" id="btn-model-refresh">
@@ -359,6 +386,21 @@
           </div>
         </header>
         <div id="model-content"></div>
+      </section>
+      <!-- ============ 8. PRUEBAS Y VALIDACIÓN ============ -->
+      <section class="view" id="view-tests" role="tabpanel" aria-labelledby="tab-tests" hidden>
+        <header class="view__head">
+          <div>
+            <h1 class="view__title">Pruebas y validación</h1>
+            <p class="view__subtitle">Evidencia de que el modelo funciona: evaluación sobre <strong>todas</strong> las fotos reales de la galería (que no se usaron al entrenar) y el resultado de las pruebas automatizadas del sistema.</p>
+          </div>
+          <div class="view__head-actions">
+            <button class="btn btn--ghost" type="button" id="btn-tests-refresh">
+              <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg><span>Actualizar</span>
+            </button>
+          </div>
+        </header>
+        <div id="tests-content"></div>
       </section>
     </main>
   </div>
@@ -395,13 +437,12 @@
       <table class="shortcuts">
         <caption class="sr-only">Lista de atajos de teclado</caption>
         <tbody>
-          <tr><td><kbd>G</kbd></td><td>Generar escenas (Detector)</td></tr>
-          <tr><td><kbd>D</kbd></td><td>Detectar la escena seleccionada o la imagen subida</td></tr>
-          <tr><td><kbd>A</kbd></td><td>Detectar todas las escenas</td></tr>
-          <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Escena anterior / siguiente</td></tr>
+          <tr><td><kbd>G</kbd></td><td>Foto al azar (Detector)</td></tr>
+          <tr><td><kbd>D</kbd></td><td>Volver a detectar la foto seleccionada o la imagen subida</td></tr>
+          <tr><td><kbd>←</kbd> <kbd>→</kbd></td><td>Foto anterior / siguiente</td></tr>
           <tr><td><kbd>O</kbd></td><td>Alternar imagen original / anotada</td></tr>
           <tr><td><kbd>B</kbd></td><td>Mostrar / ocultar cajas</td></tr>
-          <tr><td><kbd>1</kbd> … <kbd>6</kbd></td><td>Cambiar de sección (<kbd>6</kbd>: Modelo)</td></tr>
+          <tr><td><kbd>1</kbd> … <kbd>8</kbd></td><td>Cambiar de sección (<kbd>1</kbd>: Inicio, <kbd>7</kbd>: Modelo, <kbd>8</kbd>: Pruebas)</td></tr>
           <tr><td><kbd>T</kbd></td><td>Cambiar tema claro / oscuro</td></tr>
           <tr><td><kbd>?</kbd></td><td>Mostrar esta ayuda</td></tr>
           <tr><td><kbd>Esc</kbd></td><td>Cerrar diálogos</td></tr>
@@ -409,8 +450,26 @@
       </table>
       <p class="small muted help-note">
         <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
-        <span>Los atajos se desactivan mientras escribes en un campo. En los gráficos de la sección Modelo, enfoca el gráfico y usa <kbd>←</kbd> <kbd>→</kbd> para recorrer las épocas. Las escenas del Detector y de los lotes son <strong>simuladas</strong>; en «Subir imagen» puedes usar fotos reales.</span>
+        <span>Los atajos se desactivan mientras escribes en un campo. En los gráficos de la sección Modelo, enfoca el gráfico y usa <kbd>←</kbd> <kbd>→</kbd> para recorrer las épocas. Todas las imágenes son <strong>fotos reales</strong>: las del Detector y los lotes vienen de la galería, y en «Subir imagen» puedes usar las tuyas.</span>
       </p>
+    </div>
+  </dialog>
+
+  <!-- Diálogo de Zoom e inspección de imagen -->
+  <dialog class="modal modal--fullscreen" id="zoom-dialog" aria-labelledby="zoom-title">
+    <div class="modal__head">
+      <h2 class="modal__title" id="zoom-title">Inspección de imagen en alta resolución</h2>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <button class="btn btn--ghost btn--sm" type="button" id="btn-zoom-download">
+          <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg><span>Descargar imagen</span>
+        </button>
+        <button class="icon-btn" type="button" data-close aria-label="Cerrar visor"><svg class="icon" aria-hidden="true"><use href="#i-x"/></svg></button>
+      </div>
+    </div>
+    <div class="modal__body zoom-body" id="zoom-body">
+      <div class="zoom-wrap">
+        <img id="zoom-img" alt="Vista ampliada de la foto">
+      </div>
     </div>
   </dialog>
 

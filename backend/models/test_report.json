@@ -1,0 +1,352 @@
+{
+ "created_at": "2026-11-23T02:42:57",
+ "seconds": 34.0,
+ "total": 54,
+ "passed": 54,
+ "failed": 0,
+ "skipped": 0,
+ "files": [
+  {
+   "file": "backend/tests/test_api.py",
+   "description": "Tests de la API con la galería de fotos reales (backend/gallery/) y el modelo entrenado.",
+   "tests": [
+    {
+     "name": "test_char_accuracy_uses_edit_distance",
+     "status": "passed",
+     "seconds": 0.005,
+     "doc": ""
+    },
+    {
+     "name": "test_evaluate_with_boxes",
+     "status": "passed",
+     "seconds": 0.002,
+     "doc": ""
+    },
+    {
+     "name": "test_evaluate_without_boxes_matches_by_text",
+     "status": "passed",
+     "seconds": 0.002,
+     "doc": ""
+    },
+    {
+     "name": "test_health",
+     "status": "passed",
+     "seconds": 0.868,
+     "doc": ""
+    },
+    {
+     "name": "test_gallery_lists_real_photos",
+     "status": "passed",
+     "seconds": 0.195,
+     "doc": ""
+    },
+    {
+     "name": "test_detect_gallery_photo",
+     "status": "passed",
+     "seconds": 7.11,
+     "doc": ""
+    },
+    {
+     "name": "test_detect_missing_photo",
+     "status": "passed",
+     "seconds": 0.014,
+     "doc": ""
+    },
+    {
+     "name": "test_detect_validation",
+     "status": "passed",
+     "seconds": 0.022,
+     "doc": ""
+    },
+    {
+     "name": "test_model_unavailable_gives_503",
+     "status": "passed",
+     "seconds": 0.027,
+     "doc": ""
+    },
+    {
+     "name": "test_upload_without_plates",
+     "status": "passed",
+     "seconds": 0.26,
+     "doc": ""
+    },
+    {
+     "name": "test_upload_odd_sizes[shape0]",
+     "status": "passed",
+     "seconds": 0.183,
+     "doc": ""
+    },
+    {
+     "name": "test_upload_odd_sizes[shape1]",
+     "status": "passed",
+     "seconds": 0.174,
+     "doc": ""
+    },
+    {
+     "name": "test_upload_odd_sizes[shape2]",
+     "status": "passed",
+     "seconds": 0.096,
+     "doc": ""
+    },
+    {
+     "name": "test_upload_odd_sizes[shape3]",
+     "status": "passed",
+     "seconds": 1.156,
+     "doc": ""
+    },
+    {
+     "name": "test_upload_not_an_image",
+     "status": "passed",
+     "seconds": 0.026,
+     "doc": ""
+    },
+    {
+     "name": "test_upload_missing_file",
+     "status": "passed",
+     "seconds": 0.01,
+     "doc": ""
+    },
+    {
+     "name": "test_batch_and_stats",
+     "status": "passed",
+     "seconds": 2.736,
+     "doc": ""
+    },
+    {
+     "name": "test_batch_validation[body0]",
+     "status": "passed",
+     "seconds": 0.017,
+     "doc": ""
+    },
+    {
+     "name": "test_batch_validation[body1]",
+     "status": "passed",
+     "seconds": 0.014,
+     "doc": ""
+    },
+    {
+     "name": "test_batch_validation[body2]",
+     "status": "passed",
+     "seconds": 0.016,
+     "doc": ""
+    },
+    {
+     "name": "test_report_endpoint",
+     "status": "passed",
+     "seconds": 0.042,
+     "doc": ""
+    },
+    {
+     "name": "test_history_missing_and_limits",
+     "status": "passed",
+     "seconds": 0.025,
+     "doc": ""
+    },
+    {
+     "name": "test_removed_legacy_routes",
+     "status": "passed",
+     "seconds": 0.025,
+     "doc": "Las rutas de la versión anterior ya no existen."
+    },
+    {
+     "name": "test_images_not_found_and_traversal",
+     "status": "passed",
+     "seconds": 0.038,
+     "doc": ""
+    },
+    {
+     "name": "test_frontend_served",
+     "status": "passed",
+     "seconds": 0.289,
+     "doc": ""
+    },
+    {
+     "name": "test_migration_keeps_uploads",
+     "status": "passed",
+     "seconds": 0.117,
+     "doc": "Migración de una base antigua: se descartan los registros viejos y se conservan las fotos subidas."
+    },
+    {
+     "name": "test_zz_delete_history",
+     "status": "passed",
+     "seconds": 0.09,
+     "doc": ""
+    }
+   ]
+  },
+  {
+   "file": "backend/tests/test_auth.py",
+   "description": "Tests del inicio de sesión: cuenta inicial, contraseñas, sesiones, bloqueo y protección de la API.",
+   "tests": [
+    {
+     "name": "test_password_hash_is_salted_and_verifiable",
+     "status": "passed",
+     "seconds": 1.403,
+     "doc": ""
+    },
+    {
+     "name": "test_api_requires_session",
+     "status": "passed",
+     "seconds": 0.096,
+     "doc": ""
+    },
+    {
+     "name": "test_status_and_setup_only_once",
+     "status": "passed",
+     "seconds": 0.035,
+     "doc": ""
+    },
+    {
+     "name": "test_login_wrong_and_right",
+     "status": "passed",
+     "seconds": 1.428,
+     "doc": ""
+    },
+    {
+     "name": "test_session_token_is_stored_hashed",
+     "status": "passed",
+     "seconds": 0.432,
+     "doc": ""
+    },
+    {
+     "name": "test_logout_invalidates_session",
+     "status": "passed",
+     "seconds": 0.405,
+     "doc": ""
+    },
+    {
+     "name": "test_forged_cookie_rejected",
+     "status": "passed",
+     "seconds": 0.026,
+     "doc": ""
+    },
+    {
+     "name": "test_lockout_after_failed_attempts",
+     "status": "passed",
+     "seconds": 1.982,
+     "doc": ""
+    },
+    {
+     "name": "test_user_validation[ab-clave12345-3 a 32]",
+     "status": "passed",
+     "seconds": 0.003,
+     "doc": ""
+    },
+    {
+     "name": "test_user_validation[con espacio-clave12345-3 a 32]",
+     "status": "passed",
+     "seconds": 0.003,
+     "doc": ""
+    },
+    {
+     "name": "test_user_validation[nuevo1-corta1-al menos]",
+     "status": "passed",
+     "seconds": 0.005,
+     "doc": ""
+    },
+    {
+     "name": "test_user_validation[nuevo2-sololetras-letras y n\\xfameros]",
+     "status": "passed",
+     "seconds": 0.004,
+     "doc": ""
+    },
+    {
+     "name": "test_user_validation[pedro-pedro12345-nombre de usuario]",
+     "status": "passed",
+     "seconds": 0.005,
+     "doc": ""
+    },
+    {
+     "name": "test_create_second_user_and_duplicate",
+     "status": "passed",
+     "seconds": 0.393,
+     "doc": ""
+    }
+   ]
+  },
+  {
+   "file": "backend/tests/test_ml.py",
+   "description": "Tests del modelo entrenado (detector YOLO + lector CRNN): formato colombiano y decodificación CTC.",
+   "tests": [
+    {
+     "name": "test_colombian_format[ABC123-ABC123-True]",
+     "status": "passed",
+     "seconds": 0.004,
+     "doc": ""
+    },
+    {
+     "name": "test_colombian_format[A8C123-ABC123-True]",
+     "status": "passed",
+     "seconds": 0.003,
+     "doc": ""
+    },
+    {
+     "name": "test_colombian_format[KOOO42-KOO042-True]",
+     "status": "passed",
+     "seconds": 0.003,
+     "doc": ""
+    },
+    {
+     "name": "test_colombian_format[RKW326MEDELLIN-RKW326-True]",
+     "status": "passed",
+     "seconds": 0.005,
+     "doc": ""
+    },
+    {
+     "name": "test_colombian_format[XRKW326-RKW326-True]",
+     "status": "passed",
+     "seconds": 0.004,
+     "doc": ""
+    },
+    {
+     "name": "test_colombian_format[12345-12345-False]",
+     "status": "passed",
+     "seconds": 0.003,
+     "doc": ""
+    },
+    {
+     "name": "test_colombian_format[51F22261-51F22261-False]",
+     "status": "passed",
+     "seconds": 0.004,
+     "doc": ""
+    },
+    {
+     "name": "test_colombian_format[43A18650-43A18650-False]",
+     "status": "passed",
+     "seconds": 0.003,
+     "doc": ""
+    },
+    {
+     "name": "test_colombian_format[515553-515553-False]",
+     "status": "passed",
+     "seconds": 0.002,
+     "doc": ""
+    },
+    {
+     "name": "test_crnn_shapes_and_decode",
+     "status": "passed",
+     "seconds": 0.044,
+     "doc": ""
+    },
+    {
+     "name": "test_greedy_decode_ctc_rules",
+     "status": "passed",
+     "seconds": 0.003,
+     "doc": ""
+    },
+    {
+     "name": "test_model_endpoint",
+     "status": "passed",
+     "seconds": 0.019,
+     "doc": ""
+    },
+    {
+     "name": "test_overlapping_boxes_keep_most_confident",
+     "status": "passed",
+     "seconds": 0.025,
+     "doc": "Dos cajas sobre la misma placa: solo queda la de mayor confianza (evita falsos positivos)."
+    }
+   ]
+  }
+ ]
+}

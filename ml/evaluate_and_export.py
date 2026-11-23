@@ -1,7 +1,7 @@
 """Evalúa el sistema completo con fotos colombianas reales y exporta la ficha del modelo.
 
 1. Corre detector + lector entrenados sobre ml/datasets/colombia_real (18 fotos etiquetadas
-   a mano, nunca usadas al entrenar) y, para comparar, el detector clásico de la v1.
+   a mano, nunca usadas al entrenar).
 2. Reúne métricas de entrenamiento y prueba en backend/models/model_card.json, que la app
    muestra en la vista "Modelo".
 
@@ -21,7 +21,6 @@ import numpy as np
 ROOT = Path(__file__).resolve().parent
 PROJECT = ROOT.parent
 sys.path.insert(0, str(PROJECT))
-from backend.app import detector as classic  # noqa: E402
 from backend.app import ml_inference  # noqa: E402
 from train_ocr import levenshtein  # noqa: E402
 
@@ -51,11 +50,11 @@ def score(texts: list[str], gt: str) -> tuple[bool, float, str]:
 def evaluate_colombia() -> dict:
     labels = {k: v for k, v in json.loads((COL / "labels.json").read_text(encoding="utf-8")).items()
               if not k.startswith("_")}
-    rows, agg = [], {"ml": [0, 0, 0.0, 0.0], "clasico": [0, 0, 0.0, 0.0]}  # detectadas, exactas, car, ms
+    rows, agg = [], {"ml": [0, 0, 0.0, 0.0]}  # detectadas, exactas, car, ms
     for name, gt in labels.items():
         img = load(COL / name)
         row = {"imagen": name, "esperado": gt}
-        for key, fn in (("ml", ml_inference.detect), ("clasico", classic.detect)):
+        for key, fn in (("ml", ml_inference.detect),):
             t0 = time.perf_counter()
             res = fn(img)
             ms = (time.perf_counter() - t0) * 1000
@@ -68,8 +67,7 @@ def evaluate_colombia() -> dict:
             a[3] += ms
             row[key] = {"leido": best, "exacta": exact, "placas": len(res.plates), "ms": round(ms, 1)}
         rows.append(row)
-        print(f"{name:7s} {gt}  entrenado: {row['ml']['leido'] or '-':8s} {'OK' if row['ml']['exacta'] else '  '}"
-              f" | clásico: {row['clasico']['leido'] or '-':8s} {'OK' if row['clasico']['exacta'] else ''}")
+        print(f"{name:7s} {gt}  leído: {row['ml']['leido'] or '-':8s} {'OK' if row['ml']['exacta'] else ''}")
     n = len(labels)
     summary = {k: {"images": n, "detection_rate": a[0] / n, "plate_accuracy": a[1] / n,
                    "char_accuracy": a[2] / n, "avg_ms": a[3] / n} for k, a in agg.items()}

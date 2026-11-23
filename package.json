@@ -1,0 +1,19 @@
+{
+  "name": "placas-detector",
+  "version": "1.0.0",
+  "description": "PlacaVision — Consola de detección de placas vehiculares con visión por computador y Deep Learning",
+  "scripts": {
+    "start": "python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload",
+    "dev": "python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload",
+    "test": "python -m pytest backend/tests -q"
+  },
+  "keywords": [
+    "opencv",
+    "yolo",
+    "crnn",
+    "fastapi",
+    "license-plate-detection"
+  ],
+  "author": "",
+  "license": "MIT"
+}

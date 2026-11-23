@@ -5,48 +5,55 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
-Difficulty = Literal["easy", "medium", "hard"]
-# "clasico": visión por computador de la v1 (placas simuladas). "ml": modelos entrenados (fotos reales).
-Engine = Literal["clasico", "ml"]
+PhotoSet = Literal["colombia", "dataset"]
+SetFilter = Literal["all", "colombia", "dataset"]
 
 
 # ----------------------------- Peticiones --------------------------------- #
-class SimulateRequest(BaseModel):
-    count: int = Field(1, ge=1, le=12)
-    seed: Optional[int] = None
-    difficulty: Difficulty = "medium"
-
-
 class DetectRequest(BaseModel):
-    scene_id: str = Field(..., min_length=1)
-    engine: Engine = "clasico"
+    photo_id: str = Field(..., min_length=1)
 
 
 class BatchRequest(BaseModel):
-    count: int = Field(10, ge=1, le=50)
+    count: int = Field(20, ge=1, le=50)
     seed: Optional[int] = None
-    difficulty: Difficulty = "medium"
+    set: SetFilter = "all"
 
 
 # ----------------------------- Respuestas --------------------------------- #
 class Health(BaseModel):
     status: str = "ok"
     version: str
+    model_available: bool
 
 
 class GroundTruth(BaseModel):
-    text: str
-    bbox: list[int]
+    text: Optional[str] = None             # None: etiqueta ilegible (solo se mide la detección)
+    bbox: Optional[list[int]] = None       # None: se desconoce la posición (fotos colombianas)
 
 
-class Scene(BaseModel):
+class Photo(BaseModel):
     id: str
+    set: PhotoSet
     image_url: str
     width: int
     height: int
-    difficulty: str
     ground_truth: list[GroundTruth]
-    created_at: str
+
+
+class SetInfo(BaseModel):
+    nombre: str = ""
+    url: str = ""
+    licencia: str = ""
+    descripcion: str = ""
+    nota: str = ""
+    photos: int = 0
+    plates: int = 0
+
+
+class GalleryResponse(BaseModel):
+    photos: list[Photo]
+    sets: dict[str, SetInfo]
 
 
 class CharConfidence(BaseModel):
@@ -60,9 +67,9 @@ class Plate(BaseModel):
     bbox: list[int]
     chars: list[CharConfidence]
     crop_url: str
-    valid_format: bool
-    raw_text: Optional[str] = None              # solo motor "ml": lectura antes del formato colombiano
-    detection_confidence: Optional[float] = None  # solo motor "ml": confianza del detector YOLO
+    valid_format: bool                          # cumple el formato colombiano ABC123
+    raw_text: Optional[str] = None              # lectura del CRNN antes del formato colombiano
+    detection_confidence: Optional[float] = None  # confianza del detector YOLO
 
 
 class Stage(BaseModel):
@@ -71,23 +78,23 @@ class Stage(BaseModel):
 
 
 class Evaluation(BaseModel):
-    matched: int
-    expected: int
-    exact_matches: int
-    char_accuracy: float
-    correct: bool
+    expected: int        # placas esperadas en la foto
+    matched: int         # esperadas que se localizaron
+    readable: int        # esperadas con texto conocido (las que cuentan para la lectura)
+    exact_matches: int   # de las legibles, leídas exactamente
+    char_accuracy: float  # media sobre las legibles (1 - distancia de edición / longitud)
+    correct: bool        # todas localizadas, todas las legibles exactas y sin falsos positivos
 
 
 class Detection(BaseModel):
     id: str
-    scene_id: Optional[str] = None
-    source: Literal["simulated", "upload"]
-    engine: Engine = "clasico"
+    photo_id: Optional[str] = None
+    photo_set: Optional[PhotoSet] = None
+    source: Literal["gallery", "upload"]
     image_url: str
     annotated_url: str
     width: int
     height: int
-    difficulty: Optional[str] = None
     plates: list[Plate]
     ground_truth: Optional[list[GroundTruth]] = None
     evaluation: Optional[Evaluation] = None
@@ -96,7 +103,7 @@ class Detection(BaseModel):
     created_at: str
 
 
-class DiffMetrics(BaseModel):
+class SetMetrics(BaseModel):
     detections: int = 0
     plate_accuracy: float = 0.0
     char_accuracy: float = 0.0
@@ -112,15 +119,7 @@ class Metrics(BaseModel):
     detection_rate: float = 0.0
     avg_confidence: float = 0.0
     avg_processing_ms: float = 0.0
-    by_difficulty: dict[str, DiffMetrics]
-
-
-class SimulateResponse(BaseModel):
-    scenes: list[Scene]
-
-
-class ScenesResponse(BaseModel):
-    scenes: list[Scene]
+    by_set: dict[str, SetMetrics]
 
 
 class BatchResponse(BaseModel):

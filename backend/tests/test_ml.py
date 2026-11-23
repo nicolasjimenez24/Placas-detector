@@ -1,8 +1,7 @@
-"""Tests del motor con modelos entrenados (detector YOLO + lector CRNN).
+"""Tests del modelo entrenado (detector YOLO + lector CRNN): formato colombiano y decodificación CTC.
 
 Los que necesitan los pesos se omiten si aún no se han entrenado (backend/models/*.pt).
 """
-import cv2
 import numpy as np
 import pytest
 import torch
@@ -11,7 +10,6 @@ from backend.app import ml_inference
 from backend.app.ml_inference import colombian_format
 from backend.app.ml_models import ALPHABET, CRNN, encode, greedy_decode, preprocess
 
-needs_models = pytest.mark.skipif(not ml_inference.available(), reason="modelos no entrenados")
 
 
 @pytest.mark.parametrize("raw, expected, valid", [
@@ -21,6 +19,9 @@ needs_models = pytest.mark.skipif(not ml_inference.available(), reason="modelos 
     ("RKW326MEDELLIN", "RKW326", True),  # leyó parte del municipio
     ("XRKW326", "RKW326", True),
     ("12345", "12345", False),         # no encaja con el formato
+    ("51F22261", "51F22261", False),   # placa extranjera: no se deforma a "SIF222"
+    ("43A18650", "43A18650", False),
+    ("515553", "515553", False),       # necesitaría 3 cambios: no se fuerza
 ])
 def test_colombian_format(raw, expected, valid):
     text, confs, ok = colombian_format(raw, [0.9] * len(raw))
@@ -56,45 +57,19 @@ def test_model_endpoint(client):
     assert d["card"] is None or {"detector", "ocr", "dataset"} <= set(d["card"])
 
 
-def test_upload_invalid_engine(client):
-    img = np.full((100, 100, 3), 128, np.uint8)
-    ok, png = cv2.imencode(".png", img)
-    r = client.post("/api/detect/upload", files={"file": ("a.png", png.tobytes(), "image/png")},
-                    data={"engine": "otro"})
-    assert r.status_code == 422
+def test_overlapping_boxes_keep_most_confident(monkeypatch):
+    """Dos cajas sobre la misma placa: solo queda la de mayor confianza (evita falsos positivos)."""
+    import numpy as np
 
-
-def test_ml_engine_unavailable(client, monkeypatch):
-    monkeypatch.setattr(ml_inference, "available", lambda: False)
-    img = np.full((100, 100, 3), 128, np.uint8)
-    ok, png = cv2.imencode(".png", img)
-    r = client.post("/api/detect/upload", files={"file": ("a.png", png.tobytes(), "image/png")},
-                    data={"engine": "ml"})
-    assert r.status_code == 503
-    # sin motor explícito cae al clásico
-    r = client.post("/api/detect/upload", files={"file": ("a.png", png.tobytes(), "image/png")})
-    assert r.status_code == 200 and r.json()["engine"] == "clasico"
-
-
-@needs_models
-def test_ml_engine_reads_synthetic_colombian_plate(client):
-    """Una placa colombiana sintética nítida pegada en una foto debe detectarse y leerse."""
-    import random
-    import sys
-    from pathlib import Path
-
-    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "ml"))
-    from synth_colombia import render_plate
-
-    plate = np.asarray(render_plate("KDF482", random.Random(3)).resize((231, 112)))
-    scene = np.full((480, 640, 3), (90, 95, 100), np.uint8)
-    cv2.rectangle(scene, (150, 150), (490, 420), (40, 40, 160), -1)  # "carro"
-    scene[300:412, 205:436] = plate[:, :, ::-1]
-    ok, jpg = cv2.imencode(".jpg", scene)
-    r = client.post("/api/detect/upload", files={"file": ("carro.jpg", jpg.tobytes(), "image/jpeg")},
-                    data={"engine": "ml"})
-    assert r.status_code == 200
-    d = r.json()
-    assert d["engine"] == "ml" and d["plates"], "no detectó la placa"
-    assert any(p["text"] == "KDF482" for p in d["plates"]), [p["text"] for p in d["plates"]]
-    assert {s["name"] for s in d["stages"]} >= {"yolo_deteccion", "crnn_lectura"}
+    boxes = np.array([[100, 100, 300, 160], [180, 140, 260, 158], [500, 100, 700, 160]], np.float32)
+    confs = np.array([0.8, 0.1, 0.7], np.float32)
+    # el NMS ordena por confianza: se leen en el orden 0.8, 0.7, 0.1
+    reads = iter([("RJV247", [0.9] * 6), ("KOO042", [0.9] * 6), ("UTL471", [0.9] * 6)])
+    monkeypatch.setattr(ml_inference, "_load", lambda: (None, lambda batch: batch))
+    calls = iter([(boxes, confs), (np.zeros((0, 4), np.float32), np.zeros(0, np.float32))])
+    monkeypatch.setattr(ml_inference, "_yolo", lambda *a, **k: next(calls))
+    import backend.app.ml_models as mm
+    monkeypatch.setattr(mm, "preprocess", lambda img: torch.zeros(1, 32, 128))
+    monkeypatch.setattr(mm, "greedy_decode", lambda out: [next(reads) for _ in range(len(out))])
+    res = ml_inference.detect(np.zeros((400, 800, 3), np.uint8))
+    assert [p.text for p in res.plates] == ["RJV247", "KOO042"]

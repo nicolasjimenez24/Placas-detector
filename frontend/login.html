@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Iniciar sesión · PlacaVision</title>
+  <meta name="description" content="Acceso a PlacaVision, sistema de identificación automática de placas vehiculares con visión por computador.">
+  <meta name="color-scheme" content="dark light">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='8' width='28' height='16' rx='3' fill='%23FACC15' stroke='%23111' stroke-width='2'/%3E%3Crect x='7' y='13' width='18' height='5' rx='1' fill='%23111'/%3E%3C/svg%3E">
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem('placavision-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) { /* sin localStorage */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="auth-body">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+      <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 6.1A9.8 9.8 0 0 1 12 6c6.5 0 10 6 10 6a17 17 0 0 1-3.2 3.9M6.6 6.6C3.7 8.4 2 12 2 12s3.5 7 10 7c1.7 0 3.2-.4 4.5-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3 2 20h20L12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17" r="1.2" fill="currentColor"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6l-8-3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M4 12h15m-5-5 5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    </defs>
+  </svg>
+
+  <main class="auth">
+    <!-- Panel de presentación -->
+    <section class="auth__intro" aria-labelledby="intro-title">
+      <div class="brand">
+        <span class="brand__logo" aria-hidden="true">
+          <svg viewBox="0 0 40 40" width="38" height="38">
+            <rect x="3" y="10" width="34" height="20" rx="4" fill="#FACC15" stroke="#0b0d10" stroke-width="2.5"/>
+            <rect x="8" y="15" width="24" height="6" rx="1.5" fill="#0b0d10"/>
+            <rect x="13" y="24" width="14" height="2" rx="1" fill="#0b0d10" opacity=".55"/>
+            <path d="M1 7V3h4M35 3h4v4M39 33v4h-4M5 37H1v-4" fill="none" stroke="#22D3EE" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <div class="brand__text">
+          <span class="brand__name">Placa<strong>Vision</strong></span>
+          <span class="brand__tag">Identificación automática de placas</span>
+        </div>
+      </div>
+
+      <h1 class="auth__headline" id="intro-title">Un modelo entrenado que <span class="hl">encuentra y lee</span> placas vehiculares en fotos reales</h1>
+      <p class="auth__lead">Dos redes neuronales en cadena: la primera localiza la placa en la foto y la segunda lee sus caracteres. El resultado se ajusta al formato colombiano <span class="mono">ABC123</span> y se compara con el valor esperado para medir cuánto acierta.</p>
+
+      <ol class="auth-flow" aria-label="Etapas del modelo de identificación">
+        <li><span class="auth-flow__n">1</span><div><strong>Detección · YOLO11n</strong><span>Localiza cada placa con una caja y una confianza.</span></div></li>
+        <li><span class="auth-flow__n">2</span><div><strong>Recorte</strong><span>Aísla la placa con un pequeño margen.</span></div></li>
+        <li><span class="auth-flow__n">3</span><div><strong>Lectura · CRNN + CTC</strong><span>Lee la secuencia de caracteres sin segmentarlos.</span></div></li>
+        <li><span class="auth-flow__n">4</span><div><strong>Formato y validación</strong><span>Corrige confusiones (0↔O, 8↔B…) y evalúa el acierto.</span></div></li>
+      </ol>
+
+      <ul class="auth-facts">
+        <li><strong>700</strong><span>fotos reales para entrenar el detector</span></li>
+        <li><strong>10 000+</strong><span>recortes para entrenar el lector</span></li>
+        <li><strong>168</strong><span>fotos reales de validación nunca vistas</span></li>
+      </ul>
+    </section>
+
+    <!-- Formulario -->
+    <section class="auth__panel" aria-live="polite">
+      <div class="auth-card" id="auth-card">
+        <div class="auth-card__loading" id="auth-loading" role="status">
+          <span class="spinner" aria-hidden="true"></span> Comprobando sesión…
+        </div>
+
+        <!-- Iniciar sesión -->
+        <form class="auth-form" id="login-form" novalidate hidden aria-labelledby="login-title">
+          <div class="auth-form__head">
+            <span class="auth-form__icon" aria-hidden="true"><svg class="icon"><use href="#i-lock"/></svg></span>
+            <div>
+              <h2 id="login-title">Iniciar sesión</h2>
+              <p class="muted small">Ingresa con tu usuario y contraseña.</p>
+            </div>
+          </div>
+
+          <div class="auth-alert" id="login-error" role="alert" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg><span></span>
+          </div>
+
+          <div class="field">
+            <label for="login-user">Usuario</label>
+            <div class="input-icon">
+              <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>
+              <input id="login-user" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="64">
+            </div>
+          </div>
+          <div class="field">
+            <label for="login-pass">Contraseña</label>
+            <div class="input-icon input-icon--action">
+              <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+              <input id="login-pass" name="password" type="password" autocomplete="current-password" required maxlength="256">
+              <button class="pass-toggle" type="button" data-toggle="login-pass" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="icon"><use href="#i-eye"/></svg></button>
+            </div>
+            <p class="field-hint caps-hint" id="login-caps" hidden><svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>Bloq Mayús está activado</p>
+          </div>
+
+          <button class="btn btn--primary btn--block" type="submit" id="login-submit">
+            <span>Entrar</span><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+          </button>
+          <p class="auth-note small muted"><svg class="icon" aria-hidden="true"><use href="#i-shield"/></svg>
+            Contraseñas cifradas con PBKDF2 · sesión segura de 8 horas · bloqueo tras 5 intentos fallidos.</p>
+        </form>
+
+        <!-- Primer uso: crear administrador -->
+        <form class="auth-form" id="setup-form" novalidate hidden aria-labelledby="setup-title">
+          <div class="auth-form__head">
+            <span class="auth-form__icon auth-form__icon--ok" aria-hidden="true"><svg class="icon"><use href="#i-shield"/></svg></span>
+            <div>
+              <h2 id="setup-title">Crear cuenta de administrador</h2>
+              <p class="muted small">Primer uso: aún no hay usuarios. Esta cuenta podrá entrar a la aplicación.</p>
+            </div>
+          </div>
+
+          <div class="auth-alert" id="setup-error" role="alert" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg><span></span>
+          </div>
+
+          <div class="field">
+            <label for="setup-name">Nombre completo</label>
+            <div class="input-icon">
+              <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>
+              <input id="setup-name" name="name" type="text" autocomplete="name" maxlength="80" placeholder="Ej.: Nicolás Medina">
+            </div>
+          </div>
+          <div class="field">
+            <label for="setup-user">Usuario</label>
+            <div class="input-icon">
+              <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>
+              <input id="setup-user" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="32" pattern="[A-Za-z0-9._\-]{3,32}" aria-describedby="setup-user-hint">
+            </div>
+            <p class="field-hint" id="setup-user-hint">3 a 32 caracteres: letras, números, punto, guion o guion bajo.</p>
+          </div>
+          <div class="field">
+            <label for="setup-pass">Contraseña</label>
+            <div class="input-icon input-icon--action">
+              <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+              <input id="setup-pass" name="password" type="password" autocomplete="new-password" required maxlength="256" aria-describedby="pass-rules">
+              <button class="pass-toggle" type="button" data-toggle="setup-pass" aria-label="Mostrar contraseña" aria-pressed="false"><svg class="icon"><use href="#i-eye"/></svg></button>
+            </div>
+            <div class="strength" aria-hidden="true"><div class="strength__bar" id="strength-bar"></div></div>
+            <ul class="pass-rules" id="pass-rules">
+              <li data-rule="len">Al menos 8 caracteres</li>
+              <li data-rule="mix">Letras y números</li>
+              <li data-rule="user">Distinta del usuario</li>
+            </ul>
+          </div>
+          <div class="field">
+            <label for="setup-pass2">Repite la contraseña</label>
+            <div class="input-icon">
+              <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+              <input id="setup-pass2" name="password2" type="password" autocomplete="new-password" required maxlength="256">
+            </div>
+          </div>
+
+          <button class="btn btn--primary btn--block" type="submit" id="setup-submit">
+            <span>Crear cuenta y entrar</span><svg class="icon" aria-hidden="true"><use href="#i-arrow-right"/></svg>
+          </button>
+        </form>
+      </div>
+      <p class="auth-foot xsmall muted">PlacaVision · proyecto académico de visión por computador</p>
+    </section>
+  </main>
+
+  <script src="login.js" defer></script>
+</body>
+</html>

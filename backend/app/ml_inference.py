@@ -9,7 +9,7 @@ Pipeline:
      O->0 en zona de números, etc.). Si es más larga (p. ej. leyó parte del municipio), se busca
      la subcadena de 6 que encaje con el formato.
 
-Devuelve el mismo DetectionResult que el detector clásico para reutilizar la API.
+Devuelve un DetectionResult (backend/app/results.py).
 """
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from .detector import CharResult, DetectionResult, PlateResult, annotate
+from .results import CharResult, DetectionResult, PlateResult, annotate
 
 MODELS_DIR = Path(__file__).resolve().parent.parent / "models"
 DETECTOR_PATH = MODELS_DIR / "plate_detector.pt"
@@ -67,6 +67,7 @@ def warmup() -> None:
 
 
 PAD_FACTOR = 1.0  # en la segunda escala la foto ocupa 1/3 del lienzo
+OVERLAP_SAME_PLATE = 0.5  # fracción de la caja menor dentro de otra para considerarlas la misma placa
 CAND_CONF = 0.15  # umbral bajo para candidatos; se filtran luego con el formato colombiano
 
 
@@ -94,25 +95,41 @@ def _overlap_small(a: list[int], b: list[int]) -> float:
     return ix * iy / small if small else 0.0
 
 
-def colombian_format(raw: str, confs: list[float]) -> tuple[str, list[float], bool]:
-    """Ajusta la lectura al formato ABC123. Devuelve (texto, confianzas, es_válido)."""
-    def fix(s: str) -> str:
-        return "".join(TO_LETTER.get(c, c) for c in s[:3]) + "".join(TO_DIGIT.get(c, c) for c in s[3:])
+MAX_FIXES = 2  # una lectura que necesita más cambios para parecer colombiana probablemente no lo es
 
+
+def colombian_format(raw: str, confs: list[float]) -> tuple[str, list[float], bool]:
+    """Ajusta la lectura al formato ABC123. Devuelve (texto, confianzas, es_válido).
+
+    1. Si la lectura contiene una subcadena ABC123 tal cual (p. ej. leyó también el municipio:
+       ``RKW326MEDELLIN``), se queda con ella.
+    2. Solo si la lectura tiene exactamente 6 caracteres se corrigen confusiones letra/dígito
+       según la posición (``A8C123`` -> ``ABC123``), y como mucho ``MAX_FIXES``.
+    En cualquier otro caso se devuelve la lectura sin tocar (``es_válido`` = False): así no se
+    deforman placas de otros países (``51F22261`` no se convierte en ``SIF222``).
+    """
     if CO_PLATE.match(raw):
         return raw, confs, True
-    windows = [(i, raw[i:i + 6]) for i in range(0, max(1, len(raw) - 5))] if len(raw) >= 6 else []
-    for i, w in windows:  # primero sin corregir, luego corrigiendo confusiones
-        if CO_PLATE.match(w):
-            return w, confs[i:i + 6], True
-    for i, w in windows:
-        f = fix(w)
-        if CO_PLATE.match(f):
-            return f, confs[i:i + 6], True
+    for i in range(0, len(raw) - 5):
+        if CO_PLATE.match(raw[i:i + 6]):
+            return raw[i:i + 6], confs[i:i + 6], True
+    if len(raw) == 6:
+        fixed = "".join(TO_LETTER.get(c, c) for c in raw[:3]) + "".join(TO_DIGIT.get(c, c) for c in raw[3:])
+        if CO_PLATE.match(fixed) and sum(a != b for a, b in zip(raw, fixed)) <= MAX_FIXES:
+            return fixed, confs, True
     return raw, confs, False
 
 
+_infer_lock = threading.Lock()
+
+
 def detect(img: np.ndarray) -> DetectionResult:
+    """Detecta y lee las placas. Una imagen a la vez: el modelo YOLO no es seguro entre hilos."""
+    with _infer_lock:
+        return _detect(img)
+
+
+def _detect(img: np.ndarray) -> DetectionResult:
     import torch
 
     from .ml_models import greedy_decode, preprocess
@@ -171,19 +188,23 @@ def detect(img: np.ndarray) -> DetectionResult:
         if dconf < DET_CONF and not valid:
             continue
         ocr_conf = float(np.mean(ch_conf)) if ch_conf else 0.0
-        poly = np.array([[x0, y0], [x1, y0], [x1, y1], [x0, y1]], dtype=np.float32)
-        p = PlateResult(text=text or "?", confidence=dconf * ocr_conf,
-                        bbox=[x0, y0, x1 - x0, y1 - y0],
-                        chars=[CharResult(c, float(cf)) for c, cf in zip(text, ch_conf)],
-                        valid_format=valid, crop=crop, polygon=poly)
-        p.raw_text = raw  # lectura sin posprocesar (informativa)
-        p.detection_confidence = dconf
-        plates.append(p)
+        plates.append(PlateResult(text=text or "?", confidence=dconf * ocr_conf,
+                                  bbox=[x0, y0, x1 - x0, y1 - y0],
+                                  chars=[CharResult(c, float(cf)) for c, cf in zip(text, ch_conf)],
+                                  valid_format=valid, crop=crop,
+                                  raw_text=raw,  # lectura sin posprocesar (informativa)
+                                  detection_confidence=dconf))
     # una lectura sin formato que se solapa con una válida suele ser parte de la misma placa
     # (p. ej. el renglón del municipio en un primer plano): se descarta
     valid_boxes = [p.bbox for p in plates if p.valid_format]
     plates = [p for p in plates if p.valid_format or not any(_overlap_small(p.bbox, vb) > 0.3 for vb in valid_boxes)]
-    plates.sort(key=lambda p: (p.bbox[1], p.bbox[0]))
+    # dos cajas sobre la misma placa (p. ej. una pequeña dentro de la placa que leyó el municipio):
+    # se queda la de mayor confianza
+    kept: list[PlateResult] = []
+    for p in sorted(plates, key=lambda p: -p.confidence):
+        if all(_overlap_small(p.bbox, k.bbox) <= OVERLAP_SAME_PLATE for k in kept):
+            kept.append(p)
+    plates = sorted(kept, key=lambda p: (p.bbox[1], p.bbox[0]))
     t = mark("formato_colombiano", t)
 
     annotated = annotate(img, plates)

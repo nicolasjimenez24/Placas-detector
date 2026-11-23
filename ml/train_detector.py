@@ -25,6 +25,7 @@ PROJECT = ROOT.parent
 DATA = ROOT / "datasets" / "det" / "data.yaml"
 RUNS = ROOT / "runs"
 MODEL_OUT = PROJECT / "backend" / "models" / "plate_detector.pt"
+BASE_WEIGHTS = ROOT / "weights" / "yolo11n.pt"  # modelo base preentrenado en COCO
 
 
 def main() -> None:
@@ -33,7 +34,7 @@ def main() -> None:
     ap.add_argument("--imgsz", type=int, default=416)
     ap.add_argument("--batch", type=int, default=8)
     ap.add_argument("--workers", type=int, default=1)
-    ap.add_argument("--base", default="yolo11n.pt")
+    ap.add_argument("--base", default=str(BASE_WEIGHTS) if BASE_WEIGHTS.exists() else "yolo11n.pt")
     args = ap.parse_args()
 
     keep_awake()  # que Windows no se suspenda a mitad del entrenamiento

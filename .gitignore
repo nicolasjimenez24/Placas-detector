@@ -6,3 +6,5 @@ ml/datasets/
 ml/runs/
 *.pt
 !backend/models/*.pt
+# Fotos colombianas sin licencia declarada: solo uso local (ver ml/build_gallery.py)
+backend/gallery/colombia/
